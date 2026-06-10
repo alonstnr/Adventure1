@@ -580,6 +580,748 @@ const STORY = {
   ch5_card: { type:"chapter", chapter:5, title:"Breaking Point", next:"ch5_cross",
               onEnter:[ { stat:"health", delta:-8 } ], events:true },
 
+  /* ==================== CHAPTER 2 — THE FIRST COOK ==================== */
+
+  ch2_drive: {
+    chapter:2,
+    speaker:"jesse",
+    text:[
+      "The RV smells like mildew and somebody else's bad decisions. Jesse drives it out past the reservation line, two hours into red rock and nothing, narrating the whole way like a tour guide for the end of your old life. \"Rule two: nobody knows where the spot is. Not your wife, not my guys, nobody. Yo, you bring sandwiches?\"",
+      "You brought sandwiches. You also brought twenty-six years of discipline, a folding table, and a rage you are only now learning has been there the whole time, idling, like a pilot light.",
+    ],
+    next:"ch2_cook",
+  },
+
+  ch2_cook: {
+    chapter:2,
+    text:[
+      "What happens in the RV that afternoon, you will never describe to anyone — not the steps, not the hours, not the way the work takes you somewhere the cancer can't follow. It is enough to say that you are very, very good at it, and that what comes out at the end makes Jesse go quiet for the first time since you've met him.",
+      "\"Yo, Mr. White,\" he says finally, holding the result up to the light like a jeweler. \"You're a damn artist.\"",
+      "It's the first compliment anyone has paid your work in a decade. You hate how much it lands.",
+    ],
+    onEnter:[ { stat:"heat", delta:3 }, { flag:"first_batch", value:true } ],
+    choices:[
+      { label:"Let Jesse handle the sale. He knows the people; you don't want to.",
+        effects:[ { rel:"jesse", delta:1 } ],
+        goto:"ch2_dealgone" },
+      { label:"Insist on coming along. Your product, your terms.",
+        effects:[ { flag:"met_buyers", value:true }, { stat:"heat", delta:4 } ],
+        goto:"ch2_dealgone" },
+    ],
+  },
+
+  ch2_dealgone: {
+    chapter:2,
+    text:(s)=>[
+      s.flags.met_buyers
+        ? "The buyers turn out to be exactly who you feared: Emilio — fresh out on bail from the very bust where you sat in Hank's car — and his cousin, a careful, smiling man they call Krazy-8. Emilio stares at you for a long three seconds. \"I know you. You were with the DEA.\""
+        : "Jesse comes back pale, with the buyers right behind him: Emilio — fresh out on bail — and his cousin, a careful, smiling man they call Krazy-8. Emilio saw Jesse's new partner from a distance and made a phone call. \"My cousin says your guy was sitting in a fed car at my arrest,\" Krazy-8 says pleasantly.",
+      "It goes wrong with astonishing speed. There is a gun, and then there are two guns, and then you are inside the RV with the door blocked and two men explaining, in detail, what happens to people they believe are informants.",
+      "You offer them the only thing you have: the work. A demonstration. Your hands are steadier than they have any right to be.",
+    ],
+    choices:[
+      { label:"Improvise something desperate with what's at hand. Don't think. Act.",
+        effects:[ { stat:"heat", delta:10 } ],
+        goto:"ch2_aftermath" },
+      { label:"Give them everything — the batch, the cash, the RV keys. Beg.",
+        effects:[ { flag:"gave_in", value:true }, { rel:"jesse", delta:-1 } ],
+        goto:"ch2_robbed" },
+    ],
+  },
+
+  ch2_aftermath: {
+    chapter:2,
+    text:[
+      "You will tell Jesse, later, that you don't want to talk about what you did in those forty seconds, and you will mean it. When the RV door opens again, Emilio doesn't walk out of it, and Krazy-8 is unconscious in the dirt with his future entirely in your hands.",
+      "The desert is silent in a way that feels like a witness. Jesse throws up behind a rock, twice, and then helps you anyway. That's the moment you learn what he is: not smart, not careful — loyal.",
+      "Emilio you leave to the desert and to chemistry's oldest rule: nothing is ever truly lost, it only changes form. Krazy-8 wakes up zip-tied to a pole in Jesse's basement, and now there is a question down there with him.",
+    ],
+    next:"ch2_krazy8",
+  },
+
+  ch2_krazy8: {
+    chapter:2,
+    speaker:"walt",
+    text:[
+      "For three days you bring him sandwiches with the crusts cut off, and beer, and you talk. His real name is Domingo. He used to work at his father's furniture store; you remember the jingle and the two of you sing it, absurdly, in a basement that smells like motor oil. He tells you he won't talk if you let him go. He's persuasive. He may even mean it.",
+      "Upstairs, on a notepad, you make a list. One column: reasons to let him live. It fills the page. The other column has one entry, and it is the only entry that has ever mattered to anyone in this business: he will hurt your family.",
+    ],
+    choices:[
+      { label:"Let him go. You are not the man the second column needs you to be.",
+        effects:[ { flag:"spared_krazy8", value:true }, { rel:"jesse", delta:-1 } ],
+        goto:"ch2_release" },
+      { label:"Buy his silence. Every dollar you have left, an apology, and a bus ticket out of state.",
+        require:{ stats:{ money:{ gte:1000 } } },
+        effects:[ { stat:"money", delta:-1000 }, { flag:"paid_krazy8", value:true } ],
+        goto:"ch2_payoff" },
+      { label:"The second column. Do what the list says.",
+        effects:[ { flag:"crossed_line", value:true }, { stat:"trust", delta:-6 }, { stat:"heat", delta:5 }, { rel:"jesse", delta:1 } ],
+        goto:"ch2_hardchoice" },
+    ],
+  },
+
+  ch2_release: {
+    chapter:2,
+    text:[
+      "You cut the zip tie yourself. Domingo rubs his wrists, looks at you with an expression you'll spend months trying to read — gratitude, contempt, arithmetic — and walks up the basement stairs into the rest of his life.",
+      "At the door he stops. \"You're not built for this, walter white.\" He says your name like it's already evidence. Then he's gone, and you have mercy, and mercy has a phone.",
+    ],
+    next:"ch2_firstcash",
+  },
+
+  ch2_payoff: {
+    chapter:2,
+    text:[
+      "He counts the money twice, which you respect. The promise he makes you is the kind both parties agree to believe in because the alternative is worse for everyone.",
+      "\"For what it's worth,\" Domingo says at the bus station, not looking at you, \"the product's the best anyone's seen. That's your problem, you know. People are going to come looking for the man who made it.\" The bus sighs and swallows him. You stand there a while with the worst compliment of your life.",
+    ],
+    next:"ch2_firstcash",
+  },
+
+  ch2_hardchoice: {
+    chapter:2,
+    text:[
+      "You do it on a Tuesday, and afterward you sit on the bottom stair for a long time with your glasses in your hand.",
+      "There is no version of this you get to take back. You came down the stairs one kind of man, and you will climb them as another, and the house above you — Jesse's dead aunt's house, with its dishes and doilies — goes on being ordinary the way houses do, no matter what their basements learn.",
+      "Jesse doesn't say anything when you come up. He hands you a beer. It's the kindest thing anyone's done for you in weeks, and you can never tell anyone why.",
+    ],
+    next:"ch2_firstcash",
+  },
+
+  ch2_robbed: {
+    chapter:2,
+    text:[
+      "They take all of it — the batch, the startup cash, even the folding table — and leave the two of you sitting in the dirt beside an RV they generously decide is too pathetic to steal. Krazy-8's parting advice, delivered like a customer-service survey: \"Stay out of the business. You're not built for it.\"",
+      "Jesse doesn't speak on the drive back. The black eye Emilio gave him is closing up like a time-lapse flower. You ran the numbers all the way home: you are now poorer, sicker, and known by name to two violent men. As experiments go, the first trial was not a success.",
+    ],
+    onEnter:[ { stat:"money", delta:-500 } ],
+    next:"ch2_broke",
+  },
+
+  ch2_broke: {
+    chapter:2,
+    text:[
+      "The first oncology invoice arrives that Friday in a windowed envelope, the kind that always knows where you live. The number inside has a comma in it and then, insultingly, another one. You move it under the fruit bowl before Skyler sees, where it radiates through the wood like something from one of your old lectures.",
+      "Jesse calls the burner that night. \"Yo. So. Round two? Because I know a guy who is not those guys.\" You should say no. The envelope under the fruit bowl says otherwise.",
+    ],
+    onEnter:[ { stat:"health", delta:-5 }, { stat:"trust", delta:-4 } ],
+    next:"ch2_firstcash",
+  },
+
+  ch2_firstcash: {
+    chapter:2,
+    text:(s)=> s.flags.gave_in ? [
+      "Round two goes the way round one should have. Jesse's new buyer is a nervous man in a bowling shirt who pays in rubber-banded rolls and refers to you, respectfully, as 'the artist.' On a card table in Jesse's kitchen, you count it into stacks: eight thousand dollars.",
+      "It's not the seven hundred grand from Hank's press conference. But you made it in a weekend, with your hands and your mind, and no one graded it on a curve.",
+    ] : [
+      "Jesse moves the batch in six days through people he won't name, and on the seventh he hands you a gym bag in a diner parking lot like it's nothing, like it's laundry. In the car you count it with the doors locked: eight thousand dollars.",
+      "Twenty-six years of teaching never once paid you for a week what this paid you for a weekend. You sit in the driver's seat doing a kind of math that has nothing to do with money, and you notice — clinically, the way you'd note a color change in a flask — that you feel awake.",
+    ],
+    onEnter:[ { stat:"money", delta:8000 } ],
+    next:"ch2_bill",
+  },
+
+  ch2_bill: {
+    chapter:2,
+    text:[
+      "Dr. Delcavoli's billing department has the gentle relentlessness of a tide. Treatment starts now or the word 'inoperable' starts doing overtime. The options come laminated: the full protocol, the partial protocol, and the one nobody laminates — walking out.",
+      "Skyler sits beside you in the consultation holding her purse on her lap like a shield. Whatever you choose, you'll be choosing it twice: once in this room, and once at home, in the story you tell about how it's being paid for.",
+    ],
+    choices:[
+      { label:"The full protocol. The best they have.",
+        require:{ stats:{ money:{ gte:5000 } } },
+        effects:[ { stat:"money", delta:-5000 }, { stat:"health", delta:12 } ],
+        goto:"ch2_skyler" },
+      { label:"The partial protocol. Enough to fight, not enough to bankrupt.",
+        require:{ stats:{ money:{ gte:1500 } } },
+        effects:[ { stat:"money", delta:-1500 }, { stat:"health", delta:5 } ],
+        goto:"ch2_skyler" },
+      { label:"Defer treatment. You need the money working, not spent.",
+        effects:[ { stat:"health", delta:-8 }, { stat:"trust", delta:-5 }, { flag:"skipped_treatment", value:true } ],
+        goto:"ch2_skyler" },
+    ],
+  },
+
+  ch2_skyler: {
+    chapter:2,
+    speaker:"skyler",
+    text:[
+      "\"There's a second cell phone.\" Skyler says it to the mirror while taking off her earrings, casually, the way she'd mention a leaking faucet. \"It rings, and you go to the garage. And on Saturday you smelled like cigarettes, and you don't smoke, and we both know you didn't go to your mother's.\"",
+      "She turns around. Seven months pregnant, arms folded on top of everything. \"I'm not accusing you, Walt. I'm giving you a chance to be the one who tells me.\"",
+    ],
+    choices:[
+      { label:"A second job. Off the books, at the car wash. For the bills.",
+        effects:[ { stat:"trust", delta:-10 } ],
+        goto:"ch3_card" },
+      { label:"Snap at her. You're the one who's sick; you're owed some air.",
+        effects:[ { stat:"trust", delta:-15 }, { rel:"skyler", delta:-1 } ],
+        goto:"ch3_card" },
+      { label:"A half-truth: you've been arranging money for the treatment. Quietly. Legally-ish.",
+        effects:[ { stat:"trust", delta:-5 }, { flag:"sliver_truth", value:true } ],
+        goto:"ch3_card" },
+    ],
+  },
+
+  /* ==================== CHAPTER 3 — LIES AT HOME ==================== */
+
+  ch3_intervention: {
+    chapter:3,
+    text:[
+      "Skyler organizes a family meeting with an agenda and a talking pillow. Whoever holds the pillow speaks; everyone else listens. Marie holds it and talks about quality of life. Hank holds it and talks, badly, about courage, and has to look at the ceiling for a while. Walt Jr. holds it and says you're a pussy if you don't fight, and nobody corrects his language because he's right and he's crying.",
+      "Then the pillow comes to you. The room arranges itself around your answer: four faces, one future each, all of them yours to spend.",
+    ],
+    choices:[
+      { label:"Promise them the treatment. All of it. Whatever it costs.",
+        effects:[ { stat:"trust", delta:10 }, { rel:"waltjr", delta:1 }, { flag:"promised_fight", value:true } ],
+        goto:"ch3_chemo" },
+      { label:"Tell the truth for once: it's your death, and you'll decide how you meet it.",
+        effects:[ { stat:"trust", delta:-10 }, { rel:"skyler", delta:-1 }, { flag:"own_terms", value:true } ],
+        goto:"ch3_chemo" },
+    ],
+  },
+
+  ch3_chemo: {
+    chapter:3,
+    text:[
+      "Treatment days have a rhythm: the recliner, the IV, the daytime television where everyone is shouting about paternity. Your hair starts letting go in the shower, undramatically, like an employee giving notice.",
+      "You shave the rest yourself, and the man in the mirror is a stranger with your eyes — harder, simpler, somehow more true. On the walk home you pass a menswear store, and in the window, on a faceless head, sits a black pork-pie hat.",
+    ],
+    onEnter:[ { stat:"health", delta:4 }, { stat:"money", delta:-1000 } ],
+    choices:[
+      { label:"Buy the hat. It fits the stranger perfectly.",
+        effects:[ { item:"heisenberg_hat", op:"add" } ],
+        goto:"ch3_money" },
+      { label:"Keep walking. You don't need a costume; you need a plan.",
+        goto:"ch3_money" },
+    ],
+  },
+
+  ch3_money: {
+    chapter:3,
+    text:[
+      "Money is now arriving faster than a teacher's salary can explain, and Skyler does the family books. The gap between what you make and what you spend has become a room in the house: everyone walks around it.",
+      "It needs a story. Stories, you are learning, are like product: purity matters, and the cut-rate ones get people hurt.",
+    ],
+    choices:[
+      { label:"A gambling story. Blackjack, card counting — a shameful, taxable hot streak.",
+        effects:[ { stat:"trust", delta:-8 }, { flag:"gambling_story", value:true } ],
+        goto:"ch3_hank" },
+      { label:"Tell her Elliott and Gretchen are quietly paying for everything.",
+        effects:[ { stat:"trust", delta:-5 }, { flag:"elliott_lie", value:true } ],
+        goto:"ch3_hank" },
+      { label:"Hire the lawyer Jesse keeps mentioning. The one from the bus benches.",
+        require:{ stats:{ money:{ gte:4000 } }, items:["burner_phone"] },
+        hint:"Requires $4,000 and the Burner Phone",
+        effects:[ { stat:"money", delta:-4000 } ],
+        goto:"ch3_saul" },
+    ],
+  },
+
+  ch3_saul: {
+    chapter:3,
+    speaker:"saul",
+    text:[
+      "The office is in a strip mall between a nail salon and a vacuum repair shop, and the Constitution on the wall is inflatable. Saul Goodman talks for eleven uninterrupted minutes, during which he correctly guesses your business, your problem, your brother-in-law's employer, and your shoe size.",
+      "\"Here's the deal, Mont Blanc. You don't need a criminal lawyer. You need a *criminal* lawyer.\" For four grand he builds you a story with a paper skeleton: a consulting LLC, invoices, a car wash that may soon develop a surprisingly profitable relationship with cash. \"Congratulations,\" he says, handing you his card. \"You're a small business owner. Try the nail salon, tell 'em Saul sent you.\"",
+    ],
+    onEnter:[ { item:"sauls_card", op:"add" }, { rel:"saul", delta:2 }, { flag:"laundered", value:true } ],
+    next:"ch3_hank",
+  },
+
+  ch3_hank: {
+    chapter:3,
+    speaker:"hank",
+    text:[
+      "Poker night at Hank's. Between hands he talks shop, because Hank always talks shop: \"There's a new player in town. Product like nobody's seen — and no name, no face, no nothing. Guy's a ghost.\" He says it with the offended admiration of a fisherman describing the one that's still out there.",
+      "He looks at you over his cards. \"You believe that? Some genius out there right now, and me sitting here losing to a chemistry teacher.\" He laughs. Marie laughs. Skyler laughs. You fold a winning hand just to have something to do with your face.",
+    ],
+    choices:[
+      { label:"Play dumb. Change the subject to the baby.",
+        effects:[ { stat:"heat", delta:3 } ],
+        goto:"ch3_marie" },
+      { label:"Ask careful, fascinated questions. Know what he knows.",
+        effects:[ { stat:"heat", delta:-5 }, { rel:"hank", delta:1 }, { flag:"pumped_hank", value:true } ],
+        goto:"ch3_marie" },
+    ],
+  },
+
+  ch3_marie: {
+    chapter:3,
+    speaker:"marie",
+    text:[
+      "Marie gives Skyler a white-gold baby tiara, for the baby, which is a sentence that only makes sense in Marie's world. It still has the security tag. Skyler, returning it, is nearly arrested, and the resulting sister-quake hits your kitchen at dinnertime: Marie on the phone, Skyler white-knuckled, the word 'shoplifting' hissed like a chemical hazard.",
+      "Skyler hangs up and looks at you, eight months of pregnancy and one month of your lies behind her eyes. \"Well? Say something.\"",
+    ],
+    choices:[
+      { label:"Take her side completely. Marie was wrong, full stop.",
+        effects:[ { stat:"trust", delta:6 }, { rel:"marie", delta:-1 }, { rel:"skyler", delta:1 } ],
+        goto:"ch3_jesse" },
+      { label:"Smooth it over. Family is family; everyone keeps secrets they shouldn't.",
+        effects:[ { rel:"marie", delta:1 }, { stat:"trust", delta:-3 } ],
+        goto:"ch3_jesse" },
+    ],
+  },
+
+  ch3_jesse: {
+    chapter:3,
+    speaker:"jesse",
+    text:[
+      "Jesse's parents have formally evicted him from his own dead aunt's house — lawyers, a letter, the works. He tells you this in the RV with the practiced lightness of a kid who's been thrown away before and has a routine for it. \"Whatever, yo. I'll figure it out. I always figure it out.\"",
+      "He's your partner. He's also twenty-four, sleeping in a vehicle that smells like your second life, and the only person on earth who knows both of your names.",
+    ],
+    choices:[
+      { label:"Front him the deposit on his own place. Partners don't sleep in the office.",
+        require:{ stats:{ money:{ gte:2500 } } },
+        effects:[ { stat:"money", delta:-2500 }, { rel:"jesse", delta:2 } ],
+        goto:"ch3_skylerfind" },
+      { label:"Keep it business. Sympathy is a cost center.",
+        effects:[ { rel:"jesse", delta:-1 } ],
+        goto:"ch3_skylerfind" },
+    ],
+  },
+
+  ch3_skylerfind: {
+    chapter:3,
+    speaker:"skyler",
+    text:(s)=>[
+      "It was the dryer. Of all things — the dryer, with its one job. Skyler is holding the lint trap in one hand and a banded brick of twenties in the other, and the laundry room is suddenly the smallest room that has ever existed.",
+      s.flags.gambling_story
+        ? "\"Blackjack.\" She says your own story back to you with air quotes she doesn't need her hands for. \"Walt. Nobody wins this much at blackjack and hides it in the dryer.\""
+        : "\"Start talking,\" she says, \"and be advised: I have held this family together with coupons. I know exactly what money looks like when it's lying.\"",
+    ],
+    choices:[
+      { label:"Give her a sliver of truth: cash deals, gray-market consulting, all of it for the treatment.",
+        effects:[ { stat:"trust", delta:-4 }, { flag:"sliver_truth", value:true } ],
+        goto:"ch3_close" },
+      { label:"Double down. The story is the story. Stick to it, louder.",
+        effects:[ { stat:"trust", delta:-14 }, { rel:"skyler", delta:-1 } ],
+        goto:"ch3_close" },
+      { label:"Hand her Saul's number. There's an LLC. There are invoices. It's boring, really.",
+        require:{ items:["sauls_card"] },
+        effects:[ { stat:"trust", delta:-4 } ],
+        goto:"ch3_close" },
+    ],
+  },
+
+  ch3_close: {
+    chapter:3,
+    speaker:"waltjr",
+    text:[
+      "Saturday morning, before anyone else is up, your son makes you breakfast. The eggs are terrible. He's so proud of them that they're also, somehow, not.",
+      "\"After,\" he says — he's started dividing time like that, before and after, like everyone does now — \"after, when you're better, you're teaching me to drive. Dad. You promised. Stick shift.\" He grins his crooked grin, and for ten entire minutes the only thing you are is his father, and the eggs are terrible, and you eat every bite.",
+    ],
+    onEnter:[ { stat:"trust", delta:6 }, { rel:"waltjr", delta:1 } ],
+    next:"ch4_card",
+  },
+
+  /* ==================== CHAPTER 4 — EXPANSION ==================== */
+
+  ch4_stall: {
+    chapter:4,
+    speaker:"jesse",
+    text:[
+      "\"We got a distribution problem, yo.\" Jesse spreads crumpled bills across the card table like a losing hand. \"My guys can move ounces. Ounces. We are sitting on a product people would kill for and we're selling it like girl scout cookies.\"",
+      "He's right, and the math is merciless: at this rate, the treatment eats the profit and the clock eats the rest. There is a name nobody at this table wants to say. A distributor. The kind with territory, with soldiers, with a temper that has its own reputation. Tuco.",
+    ],
+    onEnter:[ { stat:"money", delta:3000 } ],
+    choices:[
+      { label:"Walk into Tuco's place yourself. You've crossed lines he respects.",
+        require:{ flags:{ crossed_line:true } },
+        hidden:true,
+        effects:[ { stat:"heat", delta:5 } ],
+        goto:"ch4_tuco_self" },
+      { label:"Have Jesse set a meet with Tuco's people. The proper channels.",
+        require:{ rels:{ jesse:{ gte:2 } } },
+        hint:"Jesse won't risk it — not for you, not yet",
+        goto:"ch4_tuco_jesse" },
+      { label:"Stay small. Slow money is still money, and nobody's shooting at it.",
+        goto:"ch4_small" },
+      { label:"Start cashing out. You came for treatment money, and it's nearly there.",
+        require:{ stats:{ money:{ gte:15000 } } },
+        goto:"ch4_cashout" },
+    ],
+  },
+
+  ch4_tuco_self: {
+    chapter:4,
+    speaker:"tuco",
+    text:[
+      "Tuco Salamanca operates out of an office above a mattress store, and the first thing he does is rob you. The second thing he does is laugh about it, with his crew, while you stand there in your windbreaker holding an empty bag. \"Tight tight tight! You got anything else for me, old man?\"",
+      "You come back the next day. Same stairs, same crew, same Tuco — but the man who walks in is wearing a black hat, carries a small bag he handles very carefully, and introduces himself with a name you made up on the drive over: Heisenberg.",
+      "\"Heisenberg,\" Tuco repeats, tasting it. \"Okay. That's a cool name. So what's in the bag, Heisenberg?\"",
+    ],
+    choices:[
+      { label:"Show him exactly what's in the bag. A demonstration of consequences.",
+        effects:[ { flag:"heisenberg", value:true }, { flag:"met_tuco", value:true }, { stat:"money", delta:12000 },
+                  { stat:"heat", delta:20 }, { rel:"tuco", delta:2 }, { item:"heisenberg_hat", op:"add" } ],
+        goto:"ch4_aftermath" },
+      { label:"Lose your nerve. Negotiate small, take his insulting first number.",
+        effects:[ { flag:"met_tuco", value:true }, { stat:"money", delta:4000 }, { stat:"heat", delta:8 }, { rel:"tuco", delta:-1 } ],
+        goto:"ch4_aftermath" },
+    ],
+  },
+
+  ch4_tuco_jesse: {
+    chapter:4,
+    text:[
+      "Jesse insists on taking the meet alone — \"No offense, but you look like a substitute teacher, yo, you'll get us both killed\" — and for six hours the burner doesn't ring.",
+      "When it finally does, it isn't Jesse. It's a hospital. Tuco took the product as a 'consignment,' took Jesse's objection personally, and put him through a door. Two broken ribs, a face like spoiled fruit, and a deal that now consists of you having been robbed by a man with a reputation to protect.",
+    ],
+    onEnter:[ { rel:"jesse", delta:0 } ],
+    choices:[
+      { label:"Cover Jesse's hospital bills. Every cent, no discussion.",
+        require:{ stats:{ money:{ gte:3000 } } },
+        effects:[ { stat:"money", delta:-3000 }, { rel:"jesse", delta:2 } ],
+        goto:"ch4_revenge" },
+      { label:"Send word that it's the cost of doing business. Sentiment is expensive.",
+        effects:[ { rel:"jesse", delta:-2 }, { stat:"trust", delta:-3 } ],
+        goto:"ch4_revenge" },
+    ],
+  },
+
+  ch4_revenge: {
+    chapter:4,
+    speaker:"tuco",
+    text:[
+      "You go up the stairs above the mattress store carrying a small bag you handle very carefully, wearing a black hat, and you give Tuco Salamanca a name you made up in the hospital parking lot: Heisenberg.",
+      "What happens next his crew will describe to each other for years, each time with the windows blowing out a little farther into the street. When the ringing stops, Tuco is laughing — actually laughing, dust in his hair — and counting money onto the desk like a man who has finally been entertained.",
+      "\"You got cojones, Heisenberg! Okay! We do business. Same time every week — and tell your boy no hard feelings, that was just negotiating.\"",
+    ],
+    onEnter:[ { flag:"heisenberg", value:true }, { flag:"met_tuco", value:true }, { stat:"money", delta:12000 },
+              { stat:"heat", delta:20 }, { rel:"tuco", delta:1 }, { item:"heisenberg_hat", op:"add" } ],
+    next:"ch4_aftermath",
+  },
+
+  ch4_aftermath: {
+    chapter:4,
+    text:(s)=>[
+      s.flags.heisenberg
+        ? "Doing business with Tuco is like keeping a tiger: the feeding schedule is everything. The weekly handoffs run clean — money in volumes you have to launder in batches now — right up until the afternoon one of Tuco's own men answers for him out of turn."
+        : "Doing business with Tuco — even small, even careful — means standing in rooms with him. And in one of those rooms, on an ordinary afternoon, one of his own men answers for him out of turn.",
+      "Tuco beats him. Not as punctuation — as policy, methodically, while the crew studies the floor and you stand there holding a gym bag full of reasons not to intervene. Afterward he wipes his hands and asks if you want a soda. The man on the floor doesn't get up.",
+      "On the drive home your hands don't shake, and you notice that they don't, and that's the part that follows you inside the house.",
+    ],
+    choices:[
+      { label:"This is the cost of empire. Learn the feeding schedule.",
+        effects:[ { flag:"empire_resolve", value:true }, { stat:"trust", delta:-5 } ],
+        goto:"ch4_family" },
+      { label:"This has to end. Set a number, hit it, get out.",
+        effects:[ { flag:"exit_resolve", value:true } ],
+        goto:"ch4_family" },
+    ],
+  },
+
+  ch4_small: {
+    chapter:4,
+    text:[
+      "You stay small. Ounces, gym bags, diner parking lots. The money comes in like rain in the desert — real, but never enough, and everyone can see the sky.",
+      "Weeks of it. The treatment calendar fills with appointments; the dryer fills with twenties; Skyler's eyes fill with the particular exhaustion of a woman married to a locked door. You are managing three slow leaks at once and calling it a boat.",
+    ],
+    onEnter:[ { stat:"money", delta:4000 }, { stat:"health", delta:-5 }, { stat:"trust", delta:-5 } ],
+    next:"ch4_pressure",
+  },
+
+  ch4_pressure: {
+    chapter:4,
+    text:[
+      "Then the bills sync up — treatment, mortgage, the baby's arrival fund — all due in the same brutal week, and the ounces aren't covering it. Jesse says the name again, quietly this time, like a prescription: Tuco.",
+      "You stand in the garage with the lights off, doing the only kind of math you have left.",
+    ],
+    choices:[
+      { label:"Set the meet. You'll deal with the tiger.",
+        goto:(s)=> s.rels.jesse >= 1 ? "ch4_tuco_jesse" : "ch4_tuco_self" },
+      { label:"Hold course. Small is survivable; tigers are not.",
+        effects:[ { flag:"stayed_small", value:true }, { stat:"money", delta:2000 } ],
+        goto:"ch4_family" },
+    ],
+  },
+
+  ch4_cashout: {
+    chapter:4,
+    text:(s)=>[
+      "You start unwinding it. Jesse takes the news better than you expected and worse than he pretends. The last batches move quietly; the cash comes home in stages, like a returning expedition.",
+      s.inventory.includes("sauls_card")
+        ? "Saul, to his credit, treats retirement as just another product. \"Smartest thing you've ever done, and I say that having billed you for the other things. The LLC stays open, the story stays boring. Boring, my friend, is what walking away looks like.\""
+        : "Without a lawyer, the money's story is thinner — a folder of handwritten invoices and a prayer that nobody official ever gets curious. Still: it's almost over. You can feel it being almost over.",
+      "You're home for dinner three nights in a row. On the third night Skyler doesn't ask why, just sets your place, and that — a plate, in its spot, unremarked — nearly takes you off your feet.",
+    ],
+    onEnter:[ { flag:"cashing_out", value:true }, { stat:"trust", delta:6 } ],
+    next:"ch4_family",
+  },
+
+  ch4_family: {
+    chapter:4,
+    speaker:"skyler",
+    text:[
+      "The sonogram tech says 'she' — casually, mid-measurement — and the room goes still. A daughter. Skyler laughs and cries at the same time, and grips your hand, and for once you let everything else be somewhere else.",
+      "\"Holly,\" Skyler says in the car. \"I keep coming back to Holly.\" She watches your face the way she watches everything now — hoping, auditing. \"She'll need you, you know. Whatever happens. Whoever you are lately. She'll need her dad.\"",
+    ],
+    onEnter:[ { stat:"trust", delta:4 } ],
+    next:"ch5_card",
+  },
+
+  /* ==================== CHAPTER 5 — BREAKING POINT ==================== */
+
+  ch5_cross: {
+    chapter:5,
+    text:(s)=>[
+      "Everything arrives at once, the way you knew it would. Tuco wants more — more product, more often, exclusivity, a relationship. Dr. Delcavoli wants a decision about the next round. Skyler wants the truth, has wanted it so long the wanting has its own chair at the table. And the man in the mirror with your eyes wants to know, finally, which of you is the alias.",
+      s.stats.heat >= 50
+        ? "And Hank — Hank has stopped telling you about the case. That's the detail you can't put down. He used to narrate every dead end over poker. Now he watches the table, and sometimes, briefly, you."
+        : "Hank, at least, is still chasing his ghost in the wrong direction, narrating dead ends over poker. Whatever window you have, it's open now.",
+      "Fifty years old. One working lung's worth of future. Choose.",
+    ],
+    choices:[
+      { label:"Take Tuco's offer. All of it. Build the thing only you can build.",
+        require:{ flags:{ met_tuco:true } },
+        hint:"You have no relationship with Tuco's organization",
+        goto:"ch5_empire" },
+      { label:"Get out. Take what's yours, burn the rest, go home.",
+        goto:"ch5_exit" },
+      { label:"Don't decide. One more cook, one more week, then you'll see.",
+        goto:"ch5_drift" },
+    ],
+  },
+
+  ch5_empire: {
+    chapter:5,
+    speaker:"tuco",
+    text:[
+      "\"Exclusive,\" Tuco says, walking the perimeter of the word like it's territory. \"Everything you make is mine. In return — protection, distribution, three states. You're not a cook anymore, Heisenberg. You're a brand.\"",
+      "He extends his hand. Behind him, his crew watches: the men who saw the windows blow out, telling the story with their eyes to anyone who comes near you. Somewhere under the fear and the math, in a place you've stopped apologizing for, something old and starved sits up straight.",
+    ],
+    next:"ch5_bigcook",
+  },
+
+  ch5_bigcook: {
+    chapter:5,
+    text:[
+      "The weekend cook is the biggest thing you have ever attempted, and you will never tell anyone a word of how it was done. Two days vanish into the work. When it's over you sleep eleven hours in the RV's passenger seat and wake up with the sun in your face and more money promised to you than your father earned in his life.",
+      "At home, the lie required is correspondingly enormous — a fugue state, a hospital evaluation, Skyler's face aging a year in a weekend. The doctors find nothing, because there is nothing to find. The cost of the weekend is filed where all the costs are filed now: under later.",
+    ],
+    onEnter:[ { stat:"money", delta:30000 }, { stat:"health", delta:-10 }, { stat:"trust", delta:-10 }, { stat:"heat", delta:10 } ],
+    next:"ch5_throne",
+  },
+
+  ch5_throne: {
+    chapter:5,
+    text:[
+      "Tuco's people talk about expansion the way Gray Matter's people talked about quarters: corridors, supply, the problem of success. There is a chair at that table now with your hat on it.",
+      "You stand in the desert where it all started, phone in one hand, the other in your pocket around the lighter you don't remember starting to carry. One call accepts the empire. One call ends it. The desert, as always, declines to advise.",
+    ],
+    choices:[
+      { label:"Make the call. Take the crown.",
+        require:{ stats:{ money:{ gte:40000 } }, flags:{ met_tuco:true } },
+        hint:"An empire needs capital — at least $40,000",
+        goto:"end_empire" },
+      { label:"It's enough. It was enough weeks ago. Out — now.",
+        goto:"ch5_exit" },
+    ],
+  },
+
+  ch5_drift: {
+    chapter:5,
+    text:[
+      "One more cook becomes two. Two becomes a schedule. Indecision, it turns out, is just a decision wearing a blindfold — the money accumulates, the lies metastasize, and every week the version of you that was going to choose gets harder to reach.",
+      "It's Jesse, of all people, who calls it. \"Yo. Either you're in this or you're out of it, but pick one, because the half-assed thing? That's how people get got.\"",
+    ],
+    onEnter:[ { stat:"money", delta:8000 }, { stat:"heat", delta:12 }, { stat:"health", delta:-6 }, { stat:"trust", delta:-6 } ],
+    choices:[
+      { label:"He's right. Get out, before the choice gets made for you.",
+        goto:(s)=> s.stats.heat >= 60 ? "ch5_hankclose" : "ch5_exit" },
+      { label:"He's right. Go all in — call Tuco.",
+        require:{ flags:{ met_tuco:true } },
+        hint:"You have no relationship with Tuco's organization",
+        goto:"ch5_empire" },
+    ],
+  },
+
+  ch5_hankclose: {
+    chapter:5,
+    speaker:"hank",
+    text:[
+      "Too late. Hank's car is outside the house when you get home — not in the driveway like family, but across the street, like work. He's not in it. He's in your kitchen, drinking your coffee, and on the table in front of him is a photograph of an RV.",
+      "\"Funny story,\" he says, not laughing. \"We pulled a known associate off a corner last week, and the kid's phone has a number in it that bounced off a tower two blocks from here. Sixteen times.\" He turns the photo around with one finger. \"Tell me about your friend Pinkman, Walt.\"",
+    ],
+    choices:[
+      { label:"Saul's escape hatch — the prepared story, the paper trail, tonight.",
+        require:{ items:["sauls_card"], stats:{ money:{ gte:8000 } } },
+        hint:"Requires Saul's Card and $8,000",
+        effects:[ { stat:"money", delta:-8000 }, { stat:"heat", set:50 } ],
+        goto:"ch5_exit" },
+      { label:"The truth, minus one fact: Pinkman's a former student you've been trying to help get clean.",
+        goto:(s)=> s.stats.heat >= 80 ? "end_caught" : "ch5_exit_scorched" },
+      { label:"Say nothing. Lawyer up in front of Hank.",
+        goto:"end_caught" },
+    ],
+  },
+
+  ch5_exit_scorched: {
+    chapter:5,
+    text:[
+      "It holds — barely, the way a bad weld holds. Hank leaves unsatisfied, which for a man like Hank is a beginning, not an end. Whatever you were still deciding, the decision is made: it's over, tonight, all of it.",
+    ],
+    onEnter:[ { stat:"heat", delta:10 } ],
+    next:"ch5_exit",
+  },
+
+  ch5_exit: {
+    chapter:5,
+    speaker:"jesse",
+    text:(s)=>[
+      "You tell Jesse it's over at the same card table where the first eight thousand dollars got counted.",
+      s.rels.jesse >= 2
+        ? "He takes it like a partner. \"Yeah. Okay. Honestly, Mr. White? Good.\" He fidgets with the corner of the table. \"For what it's worth — and don't make it weird — you're like the only person who ever acted like I could be good at something.\" You don't make it weird. You shake his hand like he's a colleague, because he is."
+        : "He takes it like a kid being left, because he is one. \"Whatever, man. It was your operation, right? I'm just the guy who knew people.\" He won't look at you. There's nothing to say that you've left yourself permission to say, so you leave the rest of the stock on the table and you go.",
+    ],
+    next:"ch5_lastsale",
+  },
+
+  ch5_lastsale: {
+    chapter:5,
+    text:[
+      "The unwinding takes nine days. The last of the stock moves through Jesse's people; the RV goes to a buyer in Gallup who pays cash and pointedly asks nothing; the burner comes apart in three dumpsters across two counties. Each subtraction makes you lighter and more frightened, like a man removing his own armor on the walk home from the war.",
+      "What's left fits in a duffel bag, and the duffel bag fits under the floor of the crawl space, and the crawl space is just a crawl space, in a house, where a family lives.",
+    ],
+    onEnter:[ { stat:"money", delta:12000 }, { item:"rv_keys", op:"remove" }, { item:"burner_phone", op:"remove" }, { stat:"heat", delta:-10 } ],
+    next:"ch5_doctor",
+  },
+
+  ch5_doctor: {
+    chapter:5,
+    text:(s)=>[
+      "Scan day. The machine hums its one note; the technicians retreat behind their glass; the radiologist takes one extra look at something, twice, and being a professional, says nothing at all.",
+      s.stats.health >= 50
+        ? "Dr. Delcavoli comes in not smiling, because doctors are careful, but carrying the scan like it weighs less than the last one. \"The mass is responding. I want to be conservative here, but — this is what we hoped to see.\" Skyler's hand finds yours and crushes it, and you let it be crushed."
+        : "Dr. Delcavoli is gentle, which is how you know. \"It's progressing. There are still options — but I'd be lying if I called them good ones.\" Skyler's hand finds yours anyway. That's the thing about her hand. It always has.",
+    ],
+    next:"ch5_final",
+  },
+
+  ch5_final: {
+    chapter:5,
+    text:(s)=>[
+      "The house at dusk. Walt Jr.'s backpack in the hall where he always drops it; the crib, half-assembled, waiting on a daughter; Skyler's silhouette in the kitchen window, making dinner for a man she has decided, daily, with her eyes open, to keep.",
+      `Under the floor: ${"$"+s.stats.money.toLocaleString()}. In your chest: the original problem, on its original schedule. On the doorstep, with your hand on the knob: the last decision you get to make as whoever you are now.`,
+    ],
+    choices:[
+      { label:"Go inside. Tell her everything — every dollar, every lie, before someone else does.",
+        effects:[ { stat:"trust", delta:12 }, { flag:"confessed", value:true } ],
+        goto:(s)=> (s.stats.money >= 30000 && s.stats.trust >= 40 && s.stats.heat <= 50) ? "end_out_clean" : "end_walk_away" },
+      { label:"Go inside. Carry it alone, forever. That's the price, and you'll pay it.",
+        goto:(s)=> (s.stats.money >= 30000 && s.stats.trust >= 40 && s.stats.heat <= 50) ? "end_out_clean" : "end_walk_away" },
+    ],
+  },
+
+  /* ==================== RANDOM EVENTS (between chapters) ==================== */
+
+  evt_hank_dropby: {
+    speaker:"hank",
+    text:[
+      "Hank's Jeep is in your driveway, unannounced, engine ticking. He's leaning on it with two six-packs and his cop smile, which is different from his real smile in ways you've started cataloguing. \"Buddy! Was in the neighborhood. You look like hell, anybody ever tell you that?\"",
+      "It's nothing. It's beer. It's also a man whose job is noticing things, standing where he can see your garage.",
+    ],
+    choices:[
+      { label:"Wave him in. Beer, the game, two hours of being his brother-in-law.",
+        effects:[ { stat:"heat", delta:-6 }, { rel:"hank", delta:1 } ],
+        goto:"@resume" },
+      { label:"Beg off — doctor's orders, no visitors. Watch him pretend not to clock that.",
+        effects:[ { stat:"heat", delta:6 } ],
+        goto:"@resume" },
+    ],
+  },
+
+  evt_dealer_arrest: {
+    text:[
+      "One of Jesse's street guys gets picked up with product on him — your product, unsigned but unmistakable, now sitting in an evidence locker with a case number. Jesse's voice on the burner is an octave high: \"He's solid, yo. Probably. I mean — he's mostly solid.\"",
+    ],
+    onEnter:[ { stat:"heat", delta:10 } ],
+    choices:[
+      { label:"Have Saul take the kid's case. Loyalty is cheaper than testimony.",
+        require:{ items:["sauls_card"], stats:{ money:{ gte:2500 } } },
+        hint:"Requires Saul's Card and $2,500",
+        effects:[ { stat:"money", delta:-2500 }, { stat:"heat", delta:-8 }, { rel:"saul", delta:1 } ],
+        goto:"@resume" },
+      { label:"Cut him loose. He never met anyone named anything.",
+        effects:[ { rel:"jesse", delta:-1 } ],
+        goto:"@resume" },
+    ],
+  },
+
+  evt_bill_due: {
+    text:[
+      "The windowed envelope again — treatment cycle, imaging, a pharmacy line item with a number that would have been your monthly salary. Due in ten days, in that font billing departments use to sound regretful about everything.",
+    ],
+    choices:[
+      { label:"Pay it in full. This is, after all, the entire point.",
+        require:{ stats:{ money:{ gte:2000 } } },
+        effects:[ { stat:"money", delta:-2000 } ],
+        goto:"@resume" },
+      { label:"Let it ride. The hospital can wait; the operation can't.",
+        effects:[ { stat:"health", delta:-5 }, { stat:"trust", delta:-3 } ],
+        goto:"@resume" },
+    ],
+  },
+
+  evt_marie_tiara: {
+    speaker:"marie",
+    text:[
+      "Marie calls four times in one evening about, in order: a hat she returned, a feeling she's been having, whether Skyler seems off to you, and — finally, the actual call — whether *you* seem off to *Skyler*, because Hank said something at work she wasn't supposed to repeat, and she isn't repeating it, she just thinks you should know that she isn't repeating it.",
+    ],
+    choices:[
+      { label:"Charm her. Twenty minutes about her pottery class; leave reassured and reassuring.",
+        effects:[ { rel:"marie", delta:1 }, { stat:"heat", delta:-3 } ],
+        goto:"@resume" },
+      { label:"Cut the call short. You don't have the energy for Marie's frequencies tonight.",
+        effects:[ { rel:"marie", delta:-1 }, { stat:"trust", delta:-2 } ],
+        goto:"@resume" },
+    ],
+  },
+
+  evt_waltjr_breakfast: {
+    speaker:"waltjr",
+    text:[
+      "Your son has reorganized the cereal shelf by, as far as you can tell, personal loyalty. He narrates breakfast like a broadcast. He calls you 'old man' in the way that means the opposite. For one entire morning, nothing in your life is a secret, a symptom, or a felony — it's just a kid, and toast, and the sports section he reads aloud whether or not anyone's listening.",
+    ],
+    onEnter:[ { stat:"trust", delta:5 }, { rel:"waltjr", delta:1 } ],
+    next:"@resume",
+  },
+
+  evt_jesse_trouble: {
+    speaker:"jesse",
+    text:[
+      "The burner rings at 2 a.m. Jesse, breathing wrong: \"Yo, I need — okay, don't be mad. Remember Combo? Combo's cousin's guy? It's a whole thing, there's a guy outside, I just — can you come? Not for nothing but you're literally the smartest person I know.\"",
+      "Skyler is asleep eleven feet away. The pillow next to her remembers your shape.",
+    ],
+    choices:[
+      { label:"Go. He's your partner, and partners come.",
+        effects:[ { stat:"trust", delta:-4 }, { rel:"jesse", delta:2 } ],
+        goto:"@resume" },
+      { label:"Talk him down by phone and go back to sleep.",
+        effects:[ { rel:"jesse", delta:-2 } ],
+        goto:"@resume" },
+    ],
+  },
+
+  evt_krazy8_fallout: {
+    text:[
+      "A gray sedan, twice in one week — once outside the school, once at the end of your street, both times gone before you can be sure. Mercy, it turns out, has a memory and a phone, and somewhere out there Domingo is alive, talkative, and exactly as persuasive as he ever was.",
+      "Nothing happens. That's the worst part. Nothing happens, all week, loudly.",
+    ],
+    onEnter:[ { stat:"heat", delta:15 } ],
+    next:"@resume",
+  },
+
+  evt_saul_tip: {
+    speaker:"saul",
+    text:[
+      "Saul calls you from what sounds like a car wash, possibly yours. \"Quick hypothetical. If a guy knew a guy at the courthouse — and this is privileged, by the way, you're paying for this call — he might hear that certain phone records got subpoenaed and came back garbage. Burners, dead ends. Somebody upstairs is officially annoyed and unofficially out of leads.\"",
+      "\"That's the good news. The bad news is they're annoyed, which means motivated. Keep being boring, that's my legal advice. Boring wins championships.\"",
+    ],
+    onEnter:[ { stat:"heat", delta:-10 }, { rel:"saul", delta:1 } ],
+    next:"@resume",
+  },
+
   /* ==================== LAST-CHANCE RESCUE SCENES ==================== */
 
   rescue_dea: {
@@ -652,12 +1394,20 @@ const STORY = {
 
   end_walk_away: {
     type:"ending", endingId:"walk_away", title:"Walk Away",
-    text:(s)=>[
-      "You take the job at Gray Matter. The insurance is gold-plated; the treatment is state of the art; the office they give you has a window facing the mountains. Elliott is gracious. Gretchen is kind. You are, in every way that can be charted, saved." ,
+    text:(s)=> s.flags.took_charity ? [
+      "You take the job at Gray Matter. The insurance is gold-plated; the treatment is state of the art; the office they give you has a window facing the mountains. Elliott is gracious. Gretchen is kind. You are, in every way that can be charted, saved.",
       "Some nights you stand in the driveway after everyone's asleep and feel the shape of the other life brush past you like a car running a red light — enormous, lethal, gone.",
       s.stats.trust >= 60
         ? "Skyler never has to learn what you were three sleepless nights from becoming. The baby comes in spring. You are there, in a clean shirt, holding her. It is enough. You decide, daily, that it is enough."
         : "The secret you almost became sits quietly inside you at every checkup, every birthday, every toast. No one will ever know. You're not sure that's the same as it never having been true.",
+    ] : [
+      "You get out. Not clean — getting out clean was a different man's ending, several decisions ago — but out, which beats the alternatives on points.",
+      s.stats.money >= 15000
+        ? "The money under the floor is real but radioactive: enough to matter, too strange to explain, spent in cash and small lies a hundred dollars at a time. The treatment continues. The mortgage survives. Nobody ever asks the question whose answer would end everything, and you live the rest of your life inside that particular silence."
+        : "There is shamefully little to show for it — after the bills, after the unwinding, after everything, the duffel bag is mostly empty. You did all of it, became all of this, for a number a good insurance plan would have laughed at.",
+      s.stats.trust >= 40
+        ? "But the house still has your family in it. Walt Jr. gets his driving lessons. The baby comes, and you are there. Whatever you were out in the desert stays in the desert, mostly, except on the nights when it doesn't."
+        : "The house is quiet around you now, polite and careful, a family of people being roommates. They never found out. They didn't have to. Whatever you brought home from the desert, they've been living next to it for months, and everyone's stopped pretending it isn't there.",
     ],
   },
 
@@ -1091,7 +1841,7 @@ function importSave(code){
       if (Number.isFinite(v)) st.rels[k] = Math.max(-3, Math.min(3, Math.round(v)));
     }
   if (Array.isArray(data.inventory))
-    st.inventory = data.inventory.filter(i=> typeof i === "string" && ITEMS[i]);
+    st.inventory = data.inventory.filter(i=> typeof i === "string" && Object.prototype.hasOwnProperty.call(ITEMS, i));
   if (data.flags && typeof data.flags === "object")
     for (const f in data.flags) if (typeof f === "string") st.flags[f] = Boolean(data.flags[f]);
   if (Array.isArray(data.firedEvents))
