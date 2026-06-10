@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Chemistry Teacher — an interactive story</title>
+<style>
+/* ============================================================
+   DESERT NOIR — mobile-first
+   ============================================================ */
+:root{
+  --bg0:#16110b;
+  --bg1:#1d1610;
+  --panel:#211a12;
+  --panel-edge:#3a2e1e;
+  --ink:#e8e0d0;
+  --ink-dim:#9c917c;
+  --amber:#e8a33d;
+  --amber-dim:#a87526;
+  --teal:#3da6a0;
+  --teal-dim:#2a6f6b;
+  --danger:#d65a3a;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono","Courier New",monospace;
+  --serif:Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:radial-gradient(120% 90% at 50% 0%, var(--bg1) 0%, var(--bg0) 70%);
+  color:var(--ink);
+  font-family:var(--mono);
+  font-size:16px;
+  line-height:1.6;
+  -webkit-text-size-adjust:100%;
+}
+button{
+  font-family:inherit;font-size:inherit;color:inherit;
+  background:none;border:none;cursor:pointer;
+  touch-action:manipulation;
+}
+
+/* ---------- app frame ---------- */
+#app{
+  display:grid;
+  grid-template-rows:auto 1fr auto;
+  grid-template-areas:"hud" "narrative" "choices";
+  height:100vh;
+  height:100dvh;
+  max-width:1100px;
+  margin:0 auto;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* ---------- HUD ---------- */
+#hud{
+  grid-area:hud;
+  display:flex;flex-wrap:wrap;gap:6px;
+  align-items:center;
+  padding:8px 10px;
+  border-bottom:1px solid var(--panel-edge);
+  background:rgba(22,17,11,.92);
+}
+.pill{
+  position:relative;
+  flex:1 1 130px;
+  min-width:118px;
+  background:var(--panel);
+  border:1px solid var(--panel-edge);
+  border-radius:6px;
+  padding:4px 8px 6px;
+  font-size:12px;
+  overflow:hidden;
+}
+.pill .lbl{display:flex;justify-content:space-between;color:var(--ink-dim);letter-spacing:.04em}
+.pill .val{color:var(--ink);font-weight:bold}
+.pill .bar{height:4px;border-radius:2px;background:#000;margin-top:4px;overflow:hidden}
+.pill .bar i{display:block;height:100%;width:0;transition:width .5s ease, background .5s ease}
+.pill[data-stat="money"] .val{color:var(--amber)}
+.pill[data-stat="heat"] .bar i{background:var(--danger)}
+.pill[data-stat="trust"] .bar i{background:var(--teal)}
+.pill[data-stat="health"] .bar i{background:var(--teal)}
+.pill.warn{border-color:var(--danger)}
+.pill.warn .lbl{color:var(--danger)}
+.pill .delta{
+  position:absolute;right:8px;top:2px;font-weight:bold;
+  animation:floatup 1.4s ease-out forwards;pointer-events:none;
+}
+.delta.up{color:var(--teal)} .delta.down{color:var(--danger)}
+@keyframes floatup{0%{opacity:0;transform:translateY(6px)}15%{opacity:1}100%{opacity:0;transform:translateY(-14px)}}
+.pill.pulse{animation:pulse .6s ease}
+@keyframes pulse{50%{border-color:var(--amber)}}
+#bagBtn{
+  flex:0 0 auto;
+  border:1px solid var(--panel-edge);border-radius:6px;
+  background:var(--panel);
+  padding:8px 12px;min-height:40px;
+  font-size:16px;
+}
+
+/* ---------- narrative ---------- */
+#narrative{
+  grid-area:narrative;
+  overflow-y:auto;
+  padding:20px 16px 28px;
+  -webkit-overflow-scrolling:touch;
+  cursor:pointer;
+}
+#narrative.fade{opacity:0;transform:translateY(8px)}
+#narrative{transition:opacity .25s ease, transform .25s ease}
+#speaker{
+  display:none;
+  font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+  margin-bottom:14px;
+}
+#speaker.on{display:inline-block;border-bottom:1px solid currentColor;padding-bottom:2px}
+#sceneText p{margin-bottom:1.1em;max-width:68ch}
+#sceneText .cursor::after{content:"▌";color:var(--amber);animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+#skipHint{color:var(--ink-dim);font-size:11px;letter-spacing:.1em;margin-top:8px;opacity:.6}
+
+/* ---------- choices ---------- */
+#choices{
+  grid-area:choices;
+  display:flex;flex-direction:column;gap:8px;
+  padding:10px 12px calc(12px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--panel-edge);
+  background:rgba(22,17,11,.96);
+  max-height:46vh;overflow-y:auto;
+}
+.choice{
+  text-align:left;
+  min-height:48px;
+  padding:12px 14px;
+  border:1px solid var(--amber-dim);
+  border-radius:6px;
+  background:linear-gradient(180deg,#2a2114,#231b10);
+  color:var(--ink);
+  line-height:1.4;
+  opacity:0;transform:translateY(6px);
+  transition:opacity .3s ease, transform .3s ease, border-color .15s;
+}
+.choice:not(.show){pointer-events:none}
+.choice.show{opacity:1;transform:none}
+@media (hover:hover){
+  .choice:not(:disabled):hover{border-color:var(--amber);background:#322617}
+}
+.choice:not(:disabled):active{border-color:var(--amber)}
+.choice .arrow{color:var(--amber);margin-right:8px}
+.choice:disabled{
+  border-color:var(--panel-edge);color:var(--ink-dim);
+  background:var(--panel);cursor:not-allowed;
+}
+.choice:disabled .arrow{color:var(--ink-dim)}
+.choice .hint{display:block;font-size:12px;color:var(--danger);margin-top:4px}
+
+/* ---------- inventory (desktop sidebar + mobile sheet) ---------- */
+#sidebar{display:none}
+.inv-title{
+  font-size:12px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--ink-dim);margin-bottom:10px;
+}
+.inv-list{list-style:none}
+.inv-list li{
+  border:1px solid var(--panel-edge);border-radius:6px;
+  background:var(--panel);
+  padding:8px 10px;margin-bottom:8px;font-size:14px;
+}
+.inv-list li b{color:var(--amber);display:block}
+.inv-list li span{color:var(--ink-dim);font-size:12px}
+.inv-empty{color:var(--ink-dim);font-size:13px;font-style:italic}
+.sysbtns{display:flex;gap:8px;margin-top:14px}
+.sysbtn{
+  flex:1;min-height:44px;
+  border:1px solid var(--teal-dim);border-radius:6px;
+  background:var(--panel);color:var(--teal);
+  font-size:14px;letter-spacing:.05em;
+}
+@media (hover:hover){ .sysbtn:hover{border-color:var(--teal)} }
+
+#sheet{
+  position:fixed;inset:auto 0 0 0;z-index:40;
+  background:var(--bg1);
+  border-top:1px solid var(--amber-dim);
+  border-radius:14px 14px 0 0;
+  padding:16px 16px calc(20px + env(safe-area-inset-bottom));
+  max-height:70vh;max-height:70dvh;overflow-y:auto;
+  transform:translateY(105%);
+  transition:transform .28s ease;
+}
+#sheet.open{transform:none}
+#sheetClose{
+  width:100%;min-height:44px;margin-top:6px;
+  color:var(--ink-dim);border:1px solid var(--panel-edge);border-radius:6px;
+}
+#scrim{
+  position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.55);
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+#scrim.on{opacity:1;pointer-events:auto}
+
+/* ---------- overlay: chapter cards, endings, save modal ---------- */
+#overlay{
+  position:fixed;inset:0;z-index:50;
+  display:none;
+  align-items:center;justify-content:center;
+  background:#0c0905;
+  padding:24px;
+  text-align:center;
+}
+#overlay.on{display:flex}
+#overlay.fadein .card{animation:cardin 1.2s ease both}
+@keyframes cardin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.card{max-width:560px;width:100%}
+.card .kicker{
+  font-size:13px;letter-spacing:.5em;text-transform:uppercase;
+  color:var(--ink-dim);margin-bottom:14px;
+}
+.card h1{
+  font-family:var(--serif);
+  font-size:clamp(28px,7vw,44px);
+  font-weight:normal;letter-spacing:.06em;
+  color:var(--amber);
+  margin-bottom:22px;
+}
+.card .body{text-align:left;margin:0 auto 20px;max-width:46ch}
+.card .body p{margin-bottom:1em;font-size:15px}
+.card .stats{
+  font-size:13px;color:var(--ink-dim);
+  border-top:1px solid var(--panel-edge);
+  padding-top:14px;margin-bottom:20px;
+}
+.card .bigbtn{
+  min-height:48px;padding:12px 34px;
+  border:1px solid var(--amber-dim);border-radius:6px;
+  color:var(--amber);letter-spacing:.2em;text-transform:uppercase;font-size:13px;
+}
+@media (hover:hover){ .card .bigbtn:hover{border-color:var(--amber);background:#241b0e} }
+#overlay.end-peace{background:#081413} #overlay.end-peace h1{color:var(--teal)}
+#overlay.end-doom{background:#170a06}  #overlay.end-doom h1{color:var(--danger)}
+#overlay.end-empire{background:#171005}
+
+/* save modal */
+#saveModal{
+  position:fixed;inset:0;z-index:60;display:none;
+  align-items:center;justify-content:center;background:rgba(0,0,0,.7);padding:16px;
+}
+#saveModal.on{display:flex}
+.modal{
+  width:100%;max-width:520px;max-height:88vh;max-height:88dvh;overflow-y:auto;
+  background:var(--bg1);border:1px solid var(--panel-edge);border-radius:10px;
+  padding:18px;text-align:left;
+}
+.modal h2{font-family:var(--serif);color:var(--amber);font-weight:normal;margin-bottom:12px}
+.modal label{display:block;font-size:12px;color:var(--ink-dim);letter-spacing:.1em;text-transform:uppercase;margin:12px 0 6px}
+.modal textarea{
+  width:100%;min-height:74px;resize:vertical;
+  background:#0e0b07;border:1px solid var(--panel-edge);border-radius:6px;
+  color:var(--ink);font-family:var(--mono);font-size:16px;padding:8px;
+  word-break:break-all;
+}
+.modal .row{display:flex;gap:8px;margin-top:8px}
+#saveMsg{font-size:13px;min-height:1.4em;margin-top:10px}
+#saveMsg.ok{color:var(--teal)} #saveMsg.err{color:var(--danger)}
+
+/* ---------- desktop ≥720px ---------- */
+@media (min-width:720px){
+  #app{
+    grid-template-columns:1fr 260px;
+    grid-template-rows:auto 1fr auto;
+    grid-template-areas:"hud hud" "narrative sidebar" "choices sidebar";
+    column-gap:0;
+  }
+  #bagBtn{display:none}
+  #sheet,#scrim{display:none}
+  #sidebar{
+    display:block;grid-area:sidebar;
+    border-left:1px solid var(--panel-edge);
+    padding:18px 14px;overflow-y:auto;
+  }
+  #narrative{padding:30px 36px}
+  #sceneText{max-width:68ch;margin:0 auto}
+  #speakerWrap{max-width:68ch;margin:0 auto}
+  #choices{padding:14px 36px 18px;max-height:none}
+  .choice{max-width:68ch;width:100%;margin:0 auto}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="hud">
+    <div class="pill" data-stat="money"><div class="lbl"><span>MONEY</span><span class="val" id="v-money">$0</span></div><div class="bar"><i id="b-money" style="background:var(--amber)"></i></div></div>
+    <div class="pill" data-stat="heat"><div class="lbl"><span>HEAT</span><span class="val" id="v-heat">0</span></div><div class="bar"><i id="b-heat"></i></div></div>
+    <div class="pill" data-stat="trust"><div class="lbl"><span>FAMILY</span><span class="val" id="v-trust">0</span></div><div class="bar"><i id="b-trust"></i></div></div>
+    <div class="pill" data-stat="health"><div class="lbl"><span>HEALTH</span><span class="val" id="v-health">0</span></div><div class="bar"><i id="b-health"></i></div></div>
+    <button id="bagBtn" aria-label="Inventory and save menu">🎒</button>
+  </header>
+
+  <main id="narrative">
+    <div id="speakerWrap"><span id="speaker"></span></div>
+    <div id="sceneText"></div>
+    <div id="skipHint">tap to skip ▸</div>
+  </main>
+
+  <div id="choices"></div>
+
+  <aside id="sidebar">
+    <div class="inv-title">Inventory</div>
+    <ul class="inv-list" id="invDesktop"></ul>
+    <div class="sysbtns">
+      <button class="sysbtn" data-open-save>Save / Load</button>
+    </div>
+  </aside>
+</div>
+
+<div id="scrim"></div>
+<div id="sheet">
+  <div class="inv-title">Inventory</div>
+  <ul class="inv-list" id="invSheet"></ul>
+  <div class="sysbtns">
+    <button class="sysbtn" data-open-save>Save / Load</button>
+  </div>
+  <button id="sheetClose">Close</button>
+</div>
+
+<div id="overlay">
+  <div class="card">
+    <div class="kicker" id="cardKicker"></div>
+    <h1 id="cardTitle"></h1>
+    <div class="body" id="cardBody"></div>
+    <div class="stats" id="cardStats"></div>
+    <button class="bigbtn" id="cardBtn"></button>
+  </div>
+</div>
+
+<div id="saveModal">
+  <div class="modal">
+    <h2>Save / Load</h2>
+    <label for="saveOut">Your save code — copy it somewhere safe</label>
+    <textarea id="saveOut" readonly></textarea>
+    <div class="row"><button class="sysbtn" id="copyBtn">Copy save code</button></div>
+    <label for="saveIn">Paste a save code to load</label>
+    <textarea id="saveIn" placeholder="Paste save code here…"></textarea>
+    <div class="row">
+      <button class="sysbtn" id="loadBtn">Load</button>
+      <button class="sysbtn" id="closeSave">Close</button>
+    </div>
+    <div id="saveMsg"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   SECTION 1: DATA
+   All story content lives here. The engine below never needs
+   to change to add scenes, items, characters, or events.
+
+   NOTE ON CONTENT: anything involving "the cook" is deliberately
+   a narrative black box. Keep it that way in all added scenes.
+   ============================================================ */
+
+const CHARACTERS = {
+  walt:   { name:"Walter White",   color:"#e8a33d" },
+  skyler: { name:"Skyler White",   color:"#9fd0cc" },
+  jesse:  { name:"Jesse Pinkman",  color:"#3da6a0" },
+  hank:   { name:"Hank Schrader",  color:"#d98f4a" },
+  marie:  { name:"Marie Schrader", color:"#b58bd6" },
+  waltjr: { name:"Walt Jr.",       color:"#c9b78a" },
+  saul:   { name:"Saul Goodman",   color:"#e0c34a" },
+  tuco:   { name:"Tuco Salamanca", color:"#d65a3a" },
+};
+
+const ITEMS = {
+  family_photo:   { name:"Family Photo",   desc:"Framed at the birthday party. The three of them, smiling." },
+  burner_phone:   { name:"Burner Phone",   desc:"Untraceable. In theory." },
+  rv_keys:        { name:"RV Keys",        desc:"A 1986 Fleetwood Bounder. It runs. Mostly." },
+  sauls_card:     { name:"Saul's Card",    desc:"\"Better Call Saul!\" A number that answers at 3 a.m." },
+  heisenberg_hat: { name:"Pork-Pie Hat",   desc:"Black felt. You stand differently when it's on." },
+};
+
+const STATS_META = {
+  money:  { label:"MONEY",  min:0, max:Infinity, barMax:50000 },
+  heat:   { label:"HEAT",   min:0, max:100, barMax:100, warnHigh:70 },
+  trust:  { label:"FAMILY", min:0, max:100, barMax:100, warnLow:25 },
+  health: { label:"HEALTH", min:0, max:100, barMax:100, warnLow:25 },
+};
+
+/* ----- random events: rolled at each chapter card (ch.2+) ----- */
+const EVENTS = [
+  { id:"hank_dropby", scene:"evt_hank_dropby", once:false,
+    require:{ stats:{ heat:{ gte:30 } } },
+    weight:(s)=> 1 + s.stats.heat/25 },
+  { id:"dealer_arrest", scene:"evt_dealer_arrest", once:true,
+    require:{ flags:{ partnered:true } },
+    weight:(s)=> 1 + s.stats.heat/40 },
+  { id:"bill_due", scene:"evt_bill_due", once:false,
+    weight:(s)=> s.stats.money < 6000 ? 2.2 : 1.2 },
+  { id:"marie_tiara", scene:"evt_marie_tiara", once:true, weight:1 },
+  { id:"waltjr_breakfast", scene:"evt_waltjr_breakfast", once:true,
+    weight:(s)=> s.stats.trust < 50 ? 1.8 : 1 },
+  { id:"jesse_trouble", scene:"evt_jesse_trouble", once:true,
+    require:{ flags:{ partnered:true } }, weight:1.2 },
+  { id:"krazy8_fallout", scene:"evt_krazy8_fallout", once:true,
+    require:{ flags:{ spared_krazy8:true } }, weight:2.5 },
+  { id:"saul_tip", scene:"evt_saul_tip", once:true,
+    require:{ items:["sauls_card"] },
+    weight:(s)=> s.stats.heat >= 40 ? 2 : 0.8 },
+];
+const NO_EVENT_WEIGHT = 2.5;
+
+/* ----- the story graph ----- */
+const STORY = {
+  start: "ch1_card",
+  scenes: {
+
+  /* ==================== CHAPTER 1 — THE DIAGNOSIS ==================== */
+
+  ch1_card: { type:"chapter", chapter:1, title:"The Diagnosis", next:"ch1_birthday" },
+
+  ch1_birthday: {
+    chapter:1,
+    text:[
+      "Fifty. The bacon on your plate is veggie bacon, arranged into the number by Skyler, who is smiling at you with the particular patience of a woman seven months pregnant. Walt Jr. grins over his orange juice. You teach chemistry to teenagers who don't care, you wash cars for men who were your students, and tonight your house fills up with people celebrating a life you can't quite remember choosing.",
+      "At the party, your brother-in-law Hank holds court with his service pistol, passing it around like a party favor. \"Go ahead, Walt, it won't bite.\" Laughter. The TV plays his press footage — a record seizure, bricks of cash on a table. \"Seven hundred grand,\" Hank says. \"And that's a slow week for these clowns.\"",
+      "Walt Jr. tugs your sleeve and hands you a small wrapped frame: a photo of the three of you at the Grand Canyon. \"Happy birthday, Dad.\"",
+    ],
+    onEnter:[ { item:"family_photo", op:"add" } ],
+    choices:[
+      { label:"Take the gun. Hold it. Feel the weight.",
+        effects:[ { rel:"hank", delta:1 } ],
+        goto:"ch1_carwash" },
+      { label:"Wave it off and slip away to help Skyler in the kitchen.",
+        effects:[ { stat:"trust", delta:5 }, { rel:"skyler", delta:1 } ],
+        goto:"ch1_carwash" },
+    ],
+  },
+
+  ch1_carwash: {
+    chapter:1,
+    text:[
+      "Two weeks later you're on your knees at the car wash — the second job Skyler doesn't know is mostly wheel-buffing now — when one of your students pulls in with his girlfriend and photographs you crouched over his tire. The flash goes off like a verdict.",
+      "Then the parking lot tilts. The sky slides sideways. You wake to a paramedic asking if you smoke, and an ambulance you already know you can't afford.",
+    ],
+    next:"ch1_diagnosis",
+  },
+
+  ch1_diagnosis: {
+    chapter:1,
+    text:[
+      "The oncologist has a mustard stain on his lapel. You stare at it the whole time, because it is easier than his mouth, which is saying: inoperable. Lung cancer. Best case, with treatment — two years. The treatment itself: ninety thousand dollars, give or take, and your HMO will cover almost none of it.",
+      "You drive home the long way. The desert out past the city doesn't care how long you've got. Somehow that helps.",
+    ],
+    choices:[
+      { label:"Tell Skyler tonight. She deserves the truth.",
+        effects:[ { flag:"told_cancer", value:true }, { stat:"trust", delta:8 }, { rel:"skyler", delta:1 } ],
+        goto:"ch1_dinner" },
+      { label:"Tell no one. Carry it alone for now.",
+        effects:[ { flag:"hid_cancer", value:true }, { stat:"trust", delta:-8 } ],
+        goto:"ch1_dinner" },
+    ],
+  },
+
+  ch1_dinner: {
+    chapter:1,
+    text:(s)=> s.flags.told_cancer ? [
+      "You tell her at the kitchen table after Walt Jr. is asleep. Skyler's hand finds yours and grips it hard enough to hurt, and for a long time neither of you says anything. Then she's all motion — second opinions, specialists, payment plans, a legal pad filling with numbers that all end in zeros you don't have.",
+      "\"We'll figure out the money,\" she says. You watch her underline the word twice and know that she can't, and that she knows it too.",
+    ] : [
+      "Dinner is meatloaf. Skyler talks about the baby kicking; Walt Jr. complains about a teacher who isn't you. You sit inside the noise of your own family like a man behind glass, nodding at the right moments, and the secret sits in your chest with its own pulse.",
+      "That night Skyler asks if you're okay. \"Tired,\" you say. The first lie is the easiest one you'll ever tell.",
+    ],
+    next:"ch1_elliott",
+  },
+
+  ch1_elliott: {
+    chapter:1,
+    speaker:null,
+    text:(s)=>[
+      "Gray Matter Technologies throws a birthday party for Elliott Schwartz that costs more than your house. You co-founded that company. You sold your share for five thousand dollars a lifetime ago, and the framed photos in the hallway have been cropped accordingly.",
+      s.flags.told_cancer
+        ? "Elliott takes you aside, kind and terrible. Skyler told Gretchen. Of course she did. \"Come work with us. Great insurance. Or — Walt — just let us cover the treatment. It's nothing to us. Please.\""
+        : "Elliott takes you aside, kind and terrible. He's heard about the collapse from a mutual friend. \"Come back. Work with us. Whatever you need, Walt — health coverage, anything. It would be our privilege.\"",
+      "It's everything you need. All it costs is everything you are.",
+    ],
+    choices:[
+      { label:"Accept. Swallow your pride and take their money.",
+        effects:[ { flag:"took_charity", value:true } ],
+        goto:"ch1_accept" },
+      { label:"Refuse. You will not live on charity from Gretchen and Elliott.",
+        effects:[ { flag:"refused_charity", value:true }, { stat:"trust", delta:-5 } ],
+        goto:"ch1_ridealong" },
+    ],
+  },
+
+  ch1_accept: {
+    chapter:1,
+    text:[
+      "You say yes. The word tastes like a tooth coming out.",
+      "Gretchen hugs you at the door and you let her. On the drive home Skyler holds your hand at every red light, and you understand that you have just chosen the version of this story where everyone gets to keep you — and you don't get to become anything else.",
+    ],
+    next:"end_walk_away",
+  },
+
+  ch1_ridealong: {
+    chapter:1,
+    speaker:"hank",
+    text:[
+      "\"You want to see some real action, buddy?\" Hank's been offering for years, half-joke. This time you say yes, and he's so pleased he buys you gas-station coffee for the stakeout.",
+      "The bust is fast and loud — DEA windbreakers, a battering ram, a man face-down on a lawn. You watch from the car. And then, from a window of the house next door, a skinny figure in baggy clothes drops onto a carport roof, slides down, and looks straight at you for one frozen second before sprinting away.",
+      "You know that face. Pinkman, Jesse. Flunked your class twice. \"Apply yourself,\" you used to write on his exams.",
+    ],
+    choices:[
+      { label:"Say nothing. Memorize the address on the mailbox.",
+        effects:[ { flag:"knows_jesse", value:true } ],
+        goto:"ch1_jesse" },
+      { label:"Look away. This is not your world.",
+        goto:"ch1_sleepless" },
+    ],
+  },
+
+  ch1_sleepless: {
+    chapter:1,
+    text:[
+      "For three nights you don't sleep. The hospital's estimate sits on the kitchen counter under the fruit bowl, where Skyler files things she refuses to be afraid of. Ninety thousand dollars. Hank's voice in your head: seven hundred grand. A slow week.",
+      "You are a brilliant chemist who has spent twenty years being polite about it. There is a door in front of you, and the handle is shaped like a former student's name. You could still take Elliott's offer instead. The phone is right there.",
+    ],
+    choices:[
+      { label:"Call Elliott. Take the money. Close the door.",
+        effects:[ { flag:"took_charity", value:true } ],
+        goto:"ch1_accept" },
+      { label:"Find Pinkman.",
+        effects:[ { flag:"knows_jesse", value:true } ],
+        goto:"ch1_jesse" },
+    ],
+  },
+
+  ch1_jesse: {
+    chapter:1,
+    speaker:"jesse",
+    text:[
+      "Jesse Pinkman opens his door, sees you, and tries to close it. Your foot is faster than your fifty-year-old knees have any right to be.",
+      "\"Mr. White? Yo, this is — whatever this is, I didn't do it.\" He's wiry, jittery, eyes going past you to the street. You tell him what you saw at the bust. You watch the math happen on his face: teacher, DEA brother-in-law, my address.",
+      "Then you say the sentence you've been rehearsing for three sleepless nights: \"I want in. You know the business. I know the chemistry.\"",
+    ],
+    choices:[
+      { label:"Make it a partnership. Equal split, his contacts, your skill.",
+        effects:[ { flag:"partnered", value:true }, { rel:"jesse", delta:1 }, { item:"burner_phone", op:"add" } ],
+        goto:"ch1_money" },
+      { label:"Make it a threat. Partner with me, or I hand Hank your address.",
+        effects:[ { flag:"partnered", value:true }, { flag:"threatened_jesse", value:true }, { rel:"jesse", delta:-1 }, { item:"burner_phone", op:"add" } ],
+        goto:"ch1_money" },
+    ],
+  },
+
+  ch1_money: {
+    chapter:1,
+    text:[
+      "Jesse calls you on the cheap prepaid phone he made you buy — \"a burner, yo, rule one\" — and explains, between insults, what a start-up requires in his industry: somewhere private, somewhere mobile. \"Out where nobody's at. We need, like... an RV.\"",
+      "Your savings account holds seven thousand dollars: twenty-six years of teaching, minus a life. You take out six of it in an envelope and meet him in a parking lot like a man in someone else's movie.",
+    ],
+    onEnter:[ { stat:"money", delta:7000 } ],
+    choices:[
+      { label:"Hand Jesse the envelope and let him handle it.",
+        effects:[ { stat:"money", delta:-6000 }, { item:"rv_keys", op:"add" }, { rel:"jesse", delta:1 } ],
+        goto:"ch2_card" },
+      { label:"Go with him. You don't trust anyone with six thousand dollars.",
+        effects:[ { stat:"money", delta:-6000 }, { item:"rv_keys", op:"add" }, { flag:"micromanager", value:true } ],
+        goto:"ch2_card" },
+    ],
+  },
+
+  /* ==================== CHAPTER CARDS 2–5 (scenes follow in later sections) ==================== */
+
+  ch2_card: { type:"chapter", chapter:2, title:"The First Cook", next:"ch2_drive",
+              onEnter:[ { stat:"health", delta:-8 } ], events:true },
+  ch3_card: { type:"chapter", chapter:3, title:"Lies at Home", next:"ch3_intervention",
+              onEnter:[ { stat:"health", delta:-8 } ], events:true },
+  ch4_card: { type:"chapter", chapter:4, title:"Expansion", next:"ch4_stall",
+              onEnter:[ { stat:"health", delta:-8 } ], events:true },
+  ch5_card: { type:"chapter", chapter:5, title:"Breaking Point", next:"ch5_cross",
+              onEnter:[ { stat:"health", delta:-8 } ], events:true },
+
+  /* ==================== LAST-CHANCE RESCUE SCENES ==================== */
+
+  rescue_dea: {
+    noInterrupt:true,
+    speaker:"hank",
+    text:[
+      "It stops being abstract on a Tuesday. Hank's car is in your driveway and Hank is not smiling. \"Got a minute, buddy?\" In the garage he lays it out, almost gently: a new player, a pattern, phone records that bend in your direction. He doesn't believe it. That's the only reason this is a conversation and not a warrant.",
+      "\"Tell me I'm crazy, Walt. Tell me there's an explanation, and we never talk about this again.\"",
+      "One move left. Choose it carefully.",
+    ],
+    choices:[
+      { label:"Call Saul's emergency line. Lawyers, paperwork, a story with receipts.",
+        require:{ items:["sauls_card"], stats:{ money:{ gte:10000 } } },
+        hint:"Requires Saul's Card and $10,000",
+        effects:[ { stat:"money", delta:-10000 }, { stat:"heat", set:55 }, { rel:"saul", delta:1 } ],
+        goto:"rescue_dea_ok" },
+      { label:"Burn it all tonight — the phone, the storage unit, every loose thread.",
+        require:{ items:["burner_phone"] },
+        hint:"Requires Burner Phone",
+        effects:[ { item:"burner_phone", op:"remove" }, { stat:"money", delta:-4000 }, { stat:"heat", set:65 } ],
+        goto:"rescue_dea_ok" },
+      { label:"Look him in the eye and deny everything. He's family. He'll blink.",
+        goto:(s)=> s.rels.hank >= 2 && s.stats.heat < 100 ? "rescue_dea_ok" : "end_caught" },
+    ],
+  },
+
+  rescue_dea_ok: {
+    noInterrupt:true,
+    text:[
+      "It holds. Barely. Hank claps your shoulder on his way out and the spot burns for an hour.",
+      "You stand in the garage a long time after his taillights go. Whatever this was — it doesn't work twice.",
+    ],
+    next:"@pending",
+  },
+
+  rescue_family: {
+    noInterrupt:true,
+    speaker:"skyler",
+    text:[
+      "You come home to suitcases by the door. Skyler is sitting at the kitchen table with both hands flat on the wood, the way she does when she has decided not to shake. Walt Jr. is at Hank and Marie's. The house is very quiet.",
+      "\"I know you're lying. I have known for months. I don't know what about, and I find that I no longer care.\" She slides her wedding ring half an inch toward you, like a chip onto a table. \"One chance, Walt. Whatever is true — say it now.\"",
+    ],
+    choices:[
+      { label:"Show her everything. The money. The reason. All of it.",
+        effects:[ { flag:"confessed", value:true }, { stat:"trust", set:25 }, { rel:"skyler", delta:-1 } ],
+        goto:"rescue_family_ok" },
+      { label:"Put the Grand Canyon photo on the table and tell her the one true thing: it was all for this.",
+        require:{ items:["family_photo"] },
+        hint:"Requires Family Photo",
+        effects:[ { stat:"trust", set:20 } ],
+        goto:"rescue_family_ok" },
+      { label:"Say nothing. Let her go.",
+        goto:"end_family" },
+    ],
+  },
+
+  rescue_family_ok: {
+    noInterrupt:true,
+    text:(s)=> s.flags.confessed ? [
+      "She listens to all of it without once interrupting, which is worse than shouting. When you finish she looks at the money on the table like it's a wound.",
+      "\"You will not bring it near the children.\" That's all. The suitcases go back upstairs. Something between you doesn't.",
+    ] : [
+      "She looks at the photograph for a long time. The Grand Canyon. Walt Jr. laughing at something off-camera.",
+      "\"I'm not staying because I believe you,\" she says finally. \"I'm staying because they do.\" The suitcases go back upstairs. You get one more chance you know you don't deserve.",
+    ],
+    next:"@pending",
+  },
+
+  /* ==================== ENDINGS ==================== */
+
+  end_walk_away: {
+    type:"ending", endingId:"walk_away", title:"Walk Away",
+    text:(s)=>[
+      "You take the job at Gray Matter. The insurance is gold-plated; the treatment is state of the art; the office they give you has a window facing the mountains. Elliott is gracious. Gretchen is kind. You are, in every way that can be charted, saved." ,
+      "Some nights you stand in the driveway after everyone's asleep and feel the shape of the other life brush past you like a car running a red light — enormous, lethal, gone.",
+      s.stats.trust >= 60
+        ? "Skyler never has to learn what you were three sleepless nights from becoming. The baby comes in spring. You are there, in a clean shirt, holding her. It is enough. You decide, daily, that it is enough."
+        : "The secret you almost became sits quietly inside you at every checkup, every birthday, every toast. No one will ever know. You're not sure that's the same as it never having been true.",
+    ],
+  },
+
+  end_caught: {
+    type:"ending", endingId:"caught", title:"Caught",
+    text:(s)=>[
+      "They do it politely, because of Hank. No battering ram, no lawn. Two cars, four agents, a knock. Skyler watches from the doorway with her hand over her mouth, and Walt Jr. watches from the stairs, and those are the two faces you will see every night for the rest of your sentence.",
+      "Hank doesn't come to the arraignment. Marie does, for Skyler, in purple, weeping. The papers love it: chemistry teacher, family man, double life.",
+      s.stats.money >= 20000
+        ? "The money is seized down to the last banded stack and photographed on a table, like the bricks on Hank's news clip a lifetime ago. Evidence. All of it, in the end — evidence."
+        : "There was so little money in the end. That's what the prosecutor keeps marveling at. All of it — for that.",
+    ],
+  },
+
+  end_family: {
+    type:"ending", endingId:"family", title:"The Empty House",
+    text:()=>[
+      "She doesn't shout. She takes the suitcases, and Walt Jr., and the future, and the door closes with a click you'll hear for years.",
+      "The lawyers are civil. The word they keep using is 'irreconcilable,' which you find imprecise. Things were reconciled fine until you reconciled them into the ground. You see your son every other Saturday at a restaurant where he orders the same thing and answers in the same three words.",
+      "You did all of it for the family. You say that to the empty house, and the house, which has heard everything now, says nothing back.",
+    ],
+  },
+
+  end_empire: {
+    type:"ending", endingId:"empire", title:"The Empire Business",
+    text:(s)=>[
+      "Tuco's territory becomes your territory, the way a river takes a field: quietly, completely, while everyone argues about fences. The product — yours, unsigned, unmistakable — moves through three states. Men you've never met are afraid of a name you made up in a desert.",
+      "The money stops being money. It becomes weight, volume, a storage problem. You solve it the way you solve everything now: precisely, and without asking anyone.",
+      s.stats.trust >= 40
+        ? "At home you are gray, mild, punctual — a man who got lucky with a gambling system, who pays for everything in cashier's checks and silence. Skyler has decided not to look directly at the sun of it. The lie holds because everyone needs it to. You sit at your own dinner table like a spy in your own life, and you have never felt more awake."
+        : "Home is a place you visit, briefly, like a man checking on a property. They flinch when you're cheerful now. They don't know what you are, only that you are no longer what you were. You tell yourself the distance keeps them safe. You're half right.",
+      "You were given two years. You no longer think about it. Whatever is growing in you will have to wait its turn — you are in the empire business, and business is good.",
+    ],
+  },
+
+  end_time: {
+    type:"ending", endingId:"time", title:"Time Runs Out",
+    text:(s)=>[
+      "In the end it isn't the DEA, or Tuco, or the lies. It's the thing that started all of it, keeping its original appointment.",
+      "The hospital room fills and empties on a tide of family. Machines keep their gentle, idiot rhythm.",
+      s.stats.money >= 25000 && s.stats.trust >= 40
+        ? "The money is real, at least — found, laundered into legitimacy, enough for the house and the college funds and the baby. Skyler holds your hand and you let yourself believe the accounting works out: that what you paid was worth what they keep."
+        : s.stats.money >= 25000
+          ? "The money is there — hidden, abundant, useless. You never worked out how to hand it to them without handing them the truth, and now there's no time to launder anything, least of all yourself."
+          : "There was supposed to be money. That was the entire point, the equation that justified everything. The equation never balanced. You ran out of time the way you ran out of everything else: with the work half-finished.",
+      "Your last clear thought is of a classroom — chalk dust in afternoon light, a roomful of bored faces, and you at the board, trying one more time to explain that nothing is ever truly lost. It only changes form.",
+    ],
+  },
+
+  end_out_clean: {
+    type:"ending", endingId:"clean", title:"Out Clean",
+    text:(s)=>[
+      "You stop. That's the whole trick, the one almost nobody manages: you stop while stopping is still a thing that can be done.",
+      "Jesse takes the news with a shrug too elaborate to be real. The RV is sold to a man in Gallup who asks no questions. The burner dies in pieces in three different dumpsters, and the desert keeps what the desert knows.",
+      `The money — ${"$"+s.stats.money.toLocaleString()} after Saul's arithmetic — becomes a story about card counting and a hot streak, and then it just becomes the mortgage, the treatment, the college fund. Boring. Sacred.`,
+      s.stats.health >= 50
+        ? "At the next scan the oncologist uses the word 'remission' with professional caution, and Skyler cries in the car, and you sit there in the passenger seat of your own rescued life, learning to be a man with time again."
+        : "The scans aren't good, but they aren't a sentence either — they're a schedule. Whatever time the treatment buys, you spend it at home, where everyone knows your name and nobody knows your alias.",
+      "Some nights you still feel it: the version of you that wouldn't have stopped, pacing behind the glass of might-have-been. You nod to him. You leave him there.",
+    ],
+  },
+
+  },
+};
+
+/* ============================================================
+   SECTION 2: ENGINE
+   ============================================================ */
+
+const $ = (id)=>document.getElementById(id);
+
+function freshState(){
+  return {
+    v:1,
+    scene:STORY.start,
+    stats:{ money:0, heat:0, trust:70, health:70 },
+    rels:{ skyler:2, jesse:0, hank:2, marie:1, waltjr:3, saul:0, tuco:0 },
+    inventory:[],
+    flags:{},
+    firedEvents:[],
+    usedRescues:[],
+    pending:null,   // scene to return to after a rescue
+    resume:null,    // scene to return to after a random event
+    history:[],
+  };
+}
+let state = freshState();
+
+/* ---------- conditions ---------- */
+function checkRequire(req){
+  if (!req) return { ok:true, hints:[] };
+  const hints = [];
+  if (req.stats) for (const k in req.stats){
+    const c = req.stats[k], v = state.stats[k];
+    if (c.gte !== undefined && v < c.gte)
+      hints.push(k==="money" ? "Requires $"+c.gte.toLocaleString() : "Requires "+STATS_META[k].label+" ≥ "+c.gte);
+    if (c.lte !== undefined && v > c.lte)
+      hints.push("Requires "+STATS_META[k].label+" ≤ "+c.lte);
+  }
+  if (req.items) for (const it of req.items){
+    if (!state.inventory.includes(it)) hints.push("Requires "+(ITEMS[it]?ITEMS[it].name:it));
+  }
+  if (req.flags) for (const f in req.flags){
+    if (Boolean(state.flags[f]) !== Boolean(req.flags[f])) hints.push(null); // story-secret: no hint text
+  }
+  if (req.rels) for (const r in req.rels){
+    const c = req.rels[r], v = state.rels[r] ?? 0;
+    if (c.gte !== undefined && v < c.gte) hints.push("Requires "+(CHARACTERS[r]?CHARACTERS[r].name:r)+"'s trust");
+    if (c.lte !== undefined && v > c.lte) hints.push(null);
+  }
+  return { ok:hints.length===0, hints:hints.filter(Boolean) };
+}
+
+/* ---------- effects ---------- */
+function applyEffects(list){
+  if (!list) return;
+  const deltas = [];
+  for (const e of list){
+    if (e.stat){
+      const m = STATS_META[e.stat];
+      const before = state.stats[e.stat];
+      let after = (e.set !== undefined) ? e.set : before + e.delta;
+      after = Math.max(m.min, Math.min(m.max, after));
+      state.stats[e.stat] = after;
+      if (after !== before) deltas.push({ stat:e.stat, d:after-before });
+    } else if (e.rel){
+      const before = state.rels[e.rel] ?? 0;
+      state.rels[e.rel] = Math.max(-3, Math.min(3, before + e.delta));
+    } else if (e.item){
+      if (e.op === "add" && !state.inventory.includes(e.item)) state.inventory.push(e.item);
+      if (e.op === "remove") state.inventory = state.inventory.filter(i=>i!==e.item);
+    } else if (e.flag !== undefined){
+      state.flags[e.flag] = e.value;
+    }
+  }
+  renderHUD(deltas);
+  renderInventory();
+}
+
+/* ---------- interrupts: stat thresholds ---------- */
+function checkInterrupt(targetId){
+  const sc = STORY.scenes[targetId];
+  if (!sc || sc.type === "ending" || sc.noInterrupt) return null;
+  if (state.stats.health <= 0) return "end_time";
+  if (state.stats.heat >= 100){
+    if (state.usedRescues.includes("dea")) return "end_caught";
+    state.usedRescues.push("dea");
+    state.pending = targetId;
+    return "rescue_dea";
+  }
+  if (state.stats.trust <= 0){
+    if (state.usedRescues.includes("family")) return "end_family";
+    state.usedRescues.push("family");
+    state.pending = targetId;
+    return "rescue_family";
+  }
+  return null;
+}
+
+/* ---------- random events ---------- */
+function pickRandomEvent(){
+  const pool = EVENTS.filter(ev=>{
+    if (ev.once && state.firedEvents.includes(ev.id)) return false;
+    return checkRequire(ev.require).ok;
+  });
+  const weights = pool.map(ev => typeof ev.weight === "function" ? ev.weight(state) : (ev.weight ?? 1));
+  const total = weights.reduce((a,b)=>a+b, NO_EVENT_WEIGHT);
+  let roll = Math.random() * total;
+  for (let i=0;i<pool.length;i++){
+    if (roll < weights[i]) return pool[i];
+    roll -= weights[i];
+  }
+  return null; // landed in the no-event slice
+}
+
+/* ---------- state machine ---------- */
+function goTo(id, opts){
+  opts = opts || {};
+  if (id === "@pending"){
+    // returning from a rescue: the target's onEnter already ran before the interrupt
+    id = state.pending || STORY.start; state.pending = null; opts.skipOnEnter = true;
+  }
+  if (id === "@resume"){
+    id = state.resume || STORY.start; state.resume = null;
+  }
+  const sc = STORY.scenes[id];
+  if (!sc){ console.error("Missing scene:", id); return; }
+  if (!opts.skipOnEnter) applyEffects(sc.onEnter);
+  const intr = checkInterrupt(id);
+  if (intr) return goTo(intr);
+  state.scene = id;
+  state.history.push(id);
+  if (state.history.length > 30) state.history.shift();
+  if (sc.type === "chapter") renderChapterCard(sc);
+  else if (sc.type === "ending") renderEnding(sc);
+  else renderScene(sc);
+}
+
+function chooseOption(choice){
+  applyEffects(choice.effects);
+  const target = typeof choice.goto === "function" ? choice.goto(state) : choice.goto;
+  goTo(target);
+}
+
+function advanceFromChapter(sc){
+  hideOverlay();
+  if (sc.events){
+    const ev = pickRandomEvent();
+    if (ev){
+      state.firedEvents.push(ev.id);
+      state.resume = sc.next;
+      return goTo(ev.scene);
+    }
+  }
+  goTo(sc.next);
+}
+
+/* ---------- rendering: HUD + inventory ---------- */
+function fmtMoney(n){ return "$" + n.toLocaleString(); }
+
+function renderHUD(deltas){
+  $("v-money").textContent = fmtMoney(state.stats.money);
+  $("v-heat").textContent = state.stats.heat;
+  $("v-trust").textContent = state.stats.trust;
+  $("v-health").textContent = state.stats.health;
+  for (const k of ["money","heat","trust","health"]){
+    const m = STATS_META[k];
+    const pct = Math.min(100, (state.stats[k]/m.barMax)*100);
+    $("b-"+k).style.width = pct + "%";
+    const pill = document.querySelector('.pill[data-stat="'+k+'"]');
+    const warn = (m.warnHigh !== undefined && state.stats[k] >= m.warnHigh) ||
+                 (m.warnLow !== undefined && state.stats[k] <= m.warnLow);
+    pill.classList.toggle("warn", warn);
+  }
+  if (deltas) for (const d of deltas){
+    const pill = document.querySelector('.pill[data-stat="'+d.stat+'"]');
+    pill.classList.remove("pulse"); void pill.offsetWidth; pill.classList.add("pulse");
+    const span = document.createElement("span");
+    span.className = "delta " + (d.d > 0 ? "up" : "down");
+    span.textContent = (d.d > 0 ? "+" : "−") + (d.stat === "money" ? "$"+Math.abs(d.d).toLocaleString() : Math.abs(d.d));
+    pill.appendChild(span);
+    setTimeout(()=>span.remove(), 1400);
+  }
+}
+
+function renderInventory(){
+  const html = state.inventory.length
+    ? state.inventory.map(id=>{
+        const it = ITEMS[id] || { name:id, desc:"" };
+        return "<li><b>"+it.name+"</b><span>"+it.desc+"</span></li>";
+      }).join("")
+    : '<li class="inv-empty" style="border:none;background:none">Empty pockets.</li>';
+  $("invDesktop").innerHTML = html;
+  $("invSheet").innerHTML = html;
+}
+
+/* ---------- rendering: scenes + typewriter ---------- */
+const tw = { items:[], idx:0, pos:0, timer:null, done:true };
+
+function sceneParagraphs(sc){
+  let t = typeof sc.text === "function" ? sc.text(state) : sc.text;
+  if (typeof t === "string") t = [t];
+  return (t || []).filter(Boolean);
+}
+
+function renderScene(sc){
+  const narr = $("narrative");
+  narr.classList.add("fade");
+  setTimeout(()=>{
+    const sp = $("speaker");
+    if (sc.speaker && CHARACTERS[sc.speaker]){
+      sp.textContent = CHARACTERS[sc.speaker].name;
+      sp.style.color = CHARACTERS[sc.speaker].color;
+      sp.className = "on";
+    } else sp.className = "";
+    startTypewriter(sceneParagraphs(sc));
+    renderChoices(sc);
+    narr.classList.remove("fade");
+    narr.scrollTop = 0;
+  }, 250);
+}
+
+function startTypewriter(paras){
+  stopTypewriter();
+  const box = $("sceneText");
+  box.innerHTML = "";
+  tw.items = paras.map(text=>{
+    const p = document.createElement("p");
+    box.appendChild(p);
+    return { p, text };
+  });
+  tw.idx = 0; tw.pos = 0; tw.done = false;
+  $("skipHint").style.opacity = .6;
+  tw.timer = setInterval(stepTypewriter, 14);
+}
+
+function stepTypewriter(){
+  let budget = 2; // chars per tick
+  while (budget-- > 0){
+    if (tw.idx >= tw.items.length) return finishTypewriter();
+    const item = tw.items[tw.idx];
+    tw.pos++;
+    if (tw.pos >= item.text.length){
+      item.p.textContent = item.text;
+      item.p.classList.remove("cursor");
+      tw.idx++; tw.pos = 0;
+    } else {
+      item.p.textContent = item.text.slice(0, tw.pos);
+      item.p.classList.add("cursor");
+    }
+  }
+  const cur = tw.items[tw.idx];
+  if (cur && cur.p.getBoundingClientRect().bottom > window.innerHeight)
+    cur.p.scrollIntoView({ block:"end" });
+}
+
+function stopTypewriter(){
+  if (tw.timer){ clearInterval(tw.timer); tw.timer = null; }
+}
+
+function finishTypewriter(){
+  stopTypewriter();
+  if (tw.done) return;
+  tw.done = true;
+  for (const it of tw.items){ it.p.textContent = it.text; it.p.classList.remove("cursor"); }
+  $("skipHint").style.opacity = 0;
+  revealChoices();
+}
+
+function skipTypewriter(){
+  if (!tw.done) finishTypewriter();
+}
+
+/* ---------- rendering: choices ---------- */
+function renderChoices(sc){
+  const box = $("choices");
+  box.innerHTML = "";
+  const entries = sc.choices
+    ? sc.choices.slice()
+    : [{ label:"Continue", goto:sc.next, _continue:true }];
+  for (const ch of entries){
+    const res = checkRequire(ch.require);
+    if (!res.ok && ch.hidden) continue;
+    const btn = document.createElement("button");
+    btn.className = "choice";
+    btn.innerHTML = '<span class="arrow">▸</span>' + escapeHtml(ch.label);
+    if (!res.ok){
+      btn.disabled = true;
+      const hint = ch.hint || res.hints[0] || "Not available";
+      btn.innerHTML += '<span class="hint">'+escapeHtml(hint)+'</span>';
+    } else {
+      btn.addEventListener("click", ()=>chooseOption(ch));
+    }
+    box.appendChild(btn);
+  }
+}
+
+function revealChoices(){
+  const btns = $("choices").querySelectorAll(".choice");
+  btns.forEach((b,i)=> setTimeout(()=>b.classList.add("show"), 80*i));
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+/* ---------- rendering: chapter + ending cards ---------- */
+const ENDING_TONE = { walk_away:"end-peace", clean:"end-peace", caught:"end-doom", family:"end-doom", time:"end-doom", empire:"end-empire" };
+
+function showOverlay(tone){
+  const ov = $("overlay");
+  ov.className = "on fadein" + (tone ? " "+tone : "");
+}
+function hideOverlay(){ $("overlay").className = ""; }
+
+function renderChapterCard(sc){
+  $("cardKicker").textContent = "Chapter " + ["","One","Two","Three","Four","Five"][sc.chapter];
+  $("cardTitle").textContent = sc.title;
+  $("cardBody").innerHTML = "";
+  $("cardStats").innerHTML = "";
+  const btn = $("cardBtn");
+  btn.textContent = "Continue";
+  btn.onclick = ()=>advanceFromChapter(sc);
+  showOverlay();
+}
+
+function renderEnding(sc){
+  $("cardKicker").textContent = "An Ending";
+  $("cardTitle").textContent = sc.title;
+  $("cardBody").innerHTML = sceneParagraphs(sc).map(p=>"<p>"+escapeHtml(p)+"</p>").join("");
+  $("cardStats").innerHTML =
+    "Final tally — Money: <b>"+fmtMoney(state.stats.money)+"</b> · Heat: "+state.stats.heat+
+    " · Family: "+state.stats.trust+" · Health: "+state.stats.health;
+  const btn = $("cardBtn");
+  btn.textContent = "Play Again";
+  btn.onclick = ()=>{ state = freshState(); hideOverlay(); renderAll(); goTo(STORY.start); };
+  showOverlay(ENDING_TONE[sc.endingId] || "");
+}
+
+/* ---------- save / load ---------- */
+function exportSave(){
+  return btoa(encodeURIComponent(JSON.stringify(state)));
+}
+
+function importSave(code){
+  if (typeof code !== "string" || !code.trim()) return { ok:false, msg:"That save code is empty." };
+  let json, data;
+  try { json = decodeURIComponent(atob(code.trim())); }
+  catch(e){ return { ok:false, msg:"That doesn't look like a valid save code." }; }
+  try { data = JSON.parse(json); }
+  catch(e){ return { ok:false, msg:"Save code is corrupted — couldn't read it." }; }
+  if (!data || typeof data !== "object") return { ok:false, msg:"Save code is corrupted — wrong format." };
+  if (data.v !== 1) return { ok:false, msg:"Save code is from an incompatible version." };
+  if (typeof data.scene !== "string" || !STORY.scenes[data.scene])
+    return { ok:false, msg:"Save code points to an unknown scene." };
+
+  // rebuild onto a fresh state: unknown keys are dropped, bad values clamped
+  const st = freshState();
+  st.scene = data.scene;
+  if (data.stats && typeof data.stats === "object")
+    for (const k in st.stats){
+      const v = Number(data.stats[k]);
+      if (Number.isFinite(v)){
+        const m = STATS_META[k];
+        st.stats[k] = Math.max(m.min, Math.min(m.max === Infinity ? 9999999 : m.max, Math.round(v)));
+      }
+    }
+  if (data.rels && typeof data.rels === "object")
+    for (const k in st.rels){
+      const v = Number(data.rels[k]);
+      if (Number.isFinite(v)) st.rels[k] = Math.max(-3, Math.min(3, Math.round(v)));
+    }
+  if (Array.isArray(data.inventory))
+    st.inventory = data.inventory.filter(i=> typeof i === "string" && ITEMS[i]);
+  if (data.flags && typeof data.flags === "object")
+    for (const f in data.flags) if (typeof f === "string") st.flags[f] = Boolean(data.flags[f]);
+  if (Array.isArray(data.firedEvents))
+    st.firedEvents = data.firedEvents.filter(i=> typeof i === "string");
+  if (Array.isArray(data.usedRescues))
+    st.usedRescues = data.usedRescues.filter(i=> i === "dea" || i === "family");
+  if (typeof data.pending === "string" && STORY.scenes[data.pending]) st.pending = data.pending;
+  if (typeof data.resume === "string" && STORY.scenes[data.resume]) st.resume = data.resume;
+  if (Array.isArray(data.history))
+    st.history = data.history.filter(i=> typeof i === "string").slice(-30);
+
+  state = st;
+  return { ok:true, msg:"Save loaded. Welcome back." };
+}
+
+/* ---------- save modal wiring ---------- */
+function openSaveModal(){
+  closeSheet();
+  $("saveOut").value = exportSave();
+  $("saveIn").value = "";
+  setSaveMsg("", "");
+  $("saveModal").classList.add("on");
+}
+function closeSaveModal(){ $("saveModal").classList.remove("on"); }
+function setSaveMsg(msg, cls){ const el = $("saveMsg"); el.textContent = msg; el.className = cls; }
+
+function copySaveCode(){
+  const ta = $("saveOut");
+  const done = ()=>setSaveMsg("Copied to clipboard.", "ok");
+  const manual = ()=>{ ta.focus(); ta.select(); setSaveMsg("Press and hold / Ctrl+C to copy the selected code.", "ok"); };
+  if (navigator.clipboard && navigator.clipboard.writeText)
+    navigator.clipboard.writeText(ta.value).then(done, manual);
+  else manual();
+}
+
+function loadFromInput(){
+  const res = importSave($("saveIn").value);
+  setSaveMsg(res.msg, res.ok ? "ok" : "err");
+  if (res.ok){
+    setTimeout(()=>{
+      closeSaveModal();
+      hideOverlay();
+      renderAll();
+      goTo(state.scene, { skipOnEnter:true });
+    }, 600);
+  }
+}
+
+/* ---------- sheet (mobile inventory) ---------- */
+function openSheet(){ $("sheet").classList.add("open"); $("scrim").classList.add("on"); }
+function closeSheet(){ $("sheet").classList.remove("open"); $("scrim").classList.remove("on"); }
+
+/* ============================================================
+   SECTION 3: BOOT
+   ============================================================ */
+function renderAll(){ renderHUD(); renderInventory(); }
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  $("narrative").addEventListener("click", skipTypewriter);
+  $("bagBtn").addEventListener("click", openSheet);
+  $("sheetClose").addEventListener("click", closeSheet);
+  $("scrim").addEventListener("click", closeSheet);
+  document.querySelectorAll("[data-open-save]").forEach(b=>b.addEventListener("click", openSaveModal));
+  $("copyBtn").addEventListener("click", copySaveCode);
+  $("loadBtn").addEventListener("click", loadFromInput);
+  $("closeSave").addEventListener("click", closeSaveModal);
+  renderAll();
+  goTo(STORY.start);
+});
+
+// debug handle (used during development; harmless to keep)
+window.game = { get state(){ return state; }, goTo, importSave, exportSave };
+</script>
+</body>
+</html>
