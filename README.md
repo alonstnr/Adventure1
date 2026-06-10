@@ -1,7 +1,7 @@
 # The Chemistry Teacher
 
 A single-file, Sierra-style graphical adventure inspired by the premise of
-*Breaking Bad* Season 1. You walk Walter White through painted VGA-era rooms:
+*Breaking Bad* Season 1. You walk Walter White through illustrated rooms:
 diagnosed, broke, and about to make a series of very bad decisions — or not.
 Up to you.
 
@@ -13,20 +13,22 @@ no network. It works on phones.
 **Controls**
 
 - **Arrow keys / WASD** — walk
-- **Enter / Space** — advance text, interact with the highlighted hotspot
-- **Click / tap** — walk somewhere, or straight to a hotspot
+- **Enter / Space** — skip text, interact with the highlighted hotspot
+- **Click / tap** — walk somewhere, tap a hotspot, or pick from the side panel
 - **Esc** — save/load
 - On touch screens an on-screen D-pad and action button appear
 
-After each scene's narration, your choices appear in the room as glowing
-markers, characters, and doors. Walk up to one — the status line at the
-bottom shows what it means — and press Enter to commit.
+Narration plays in the side panel (below the scene on phones). When it
+finishes, your choices appear both as glowing hotspots in the room and as a
+list in the panel — walk to a hotspot and press Enter, or click the list
+entry and Walt walks there himself.
 
 ## Features
 
 - 5 chapters, ~75 scenes, 6 distinct endings shaped by your choices
 - 12 hand-painted rooms (all art drawn in code — no image files) with
-  procedural pixel-art characters; Walt's sprite changes with the story
+  gradient lighting, shadows, and animated character figures; Walt's look
+  changes with the story
 - Four stats — **Money**, **Heat**, **Family**, **Health** — that gate
   choices and trigger story interrupts at critical thresholds
 - Inventory items that unlock options; 8 random events between chapters
