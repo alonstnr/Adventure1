@@ -6,32 +6,32 @@
 <title>The Chemistry Teacher — an interactive story</title>
 <style>
 /* ============================================================
-   DESERT NOIR — mobile-first
+   SIERRA VGA — desert noir edition
    ============================================================ */
 :root{
-  --bg0:#16110b;
-  --bg1:#1d1610;
-  --panel:#211a12;
-  --panel-edge:#3a2e1e;
-  --ink:#e8e0d0;
-  --ink-dim:#9c917c;
+  --bg:#0a0a12;
+  --chrome:#b9b9c4;
+  --chrome-hi:#e8e8ee;
+  --chrome-lo:#5c5c68;
+  --ink:#15130e;
+  --paper:#f4ecd6;
+  --paper-edge:#171410;
   --amber:#e8a33d;
-  --amber-dim:#a87526;
   --teal:#3da6a0;
-  --teal-dim:#2a6f6b;
-  --danger:#d65a3a;
+  --danger:#c83a22;
   --mono:ui-monospace,"SF Mono","Cascadia Mono","Courier New",monospace;
   --serif:Georgia,"Times New Roman",serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
-  background:radial-gradient(120% 90% at 50% 0%, var(--bg1) 0%, var(--bg0) 70%);
-  color:var(--ink);
+  background:var(--bg);
+  color:#ddd;
   font-family:var(--mono);
   font-size:16px;
-  line-height:1.6;
+  line-height:1.5;
   -webkit-text-size-adjust:100%;
+  overflow:hidden;
 }
 button{
   font-family:inherit;font-size:inherit;color:inherit;
@@ -41,147 +41,184 @@ button{
 
 /* ---------- app frame ---------- */
 #app{
-  display:grid;
-  grid-template-rows:auto 1fr auto;
-  grid-template-areas:"hud" "narrative" "choices";
-  height:100vh;
-  height:100dvh;
-  max-width:1100px;
-  margin:0 auto;
+  height:100vh;height:100dvh;
+  display:flex;flex-direction:column;align-items:center;
   padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
+#main{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  width:100%;min-height:0;gap:14px;padding:8px;
+}
 
-/* ---------- HUD ---------- */
+/* ---------- status bar (Sierra strip) ---------- */
 #hud{
-  grid-area:hud;
-  display:flex;flex-wrap:wrap;gap:6px;
-  align-items:center;
-  padding:8px 10px;
-  border-bottom:1px solid var(--panel-edge);
-  background:rgba(22,17,11,.92);
+  width:100%;
+  display:flex;flex-wrap:wrap;gap:2px 14px;
+  align-items:center;justify-content:center;
+  background:linear-gradient(#d8d8e0,var(--chrome));
+  border-bottom:2px solid var(--chrome-lo);
+  color:var(--ink);
+  padding:3px 8px;
+  font-size:13px;
+  z-index:5;
 }
-.pill{
-  position:relative;
-  flex:1 1 130px;
-  min-width:118px;
-  background:var(--panel);
-  border:1px solid var(--panel-edge);
-  border-radius:6px;
-  padding:4px 8px 6px;
-  font-size:12px;
-  overflow:hidden;
-}
-.pill .lbl{display:flex;justify-content:space-between;color:var(--ink-dim);letter-spacing:.04em}
-.pill .val{color:var(--ink);font-weight:bold}
-.pill .bar{height:4px;border-radius:2px;background:#000;margin-top:4px;overflow:hidden}
-.pill .bar i{display:block;height:100%;width:0;transition:width .5s ease, background .5s ease}
-.pill[data-stat="money"] .val{color:var(--amber)}
+.pill{position:relative;display:flex;align-items:center;gap:6px;padding:2px 2px}
+.pill .lbl{display:flex;gap:6px;letter-spacing:.04em}
+.pill .lbl span:first-child{color:#444}
+.pill .val{font-weight:bold}
+.pill[data-stat="money"] .val{color:#7a4a00}
+.pill .bar{width:42px;height:5px;background:#777;border:1px solid #444;overflow:hidden}
+.pill .bar i{display:block;height:100%;width:0;transition:width .5s ease}
 .pill[data-stat="heat"] .bar i{background:var(--danger)}
-.pill[data-stat="trust"] .bar i{background:var(--teal)}
-.pill[data-stat="health"] .bar i{background:var(--teal)}
-.pill.warn{border-color:var(--danger)}
-.pill.warn .lbl{color:var(--danger)}
+.pill[data-stat="trust"] .bar i{background:#1f7a74}
+.pill[data-stat="health"] .bar i{background:#1f7a74}
+.pill[data-stat="money"] .bar{display:none}
+.pill.warn .lbl span:first-child,.pill.warn .val{color:var(--danger)}
 .pill .delta{
-  position:absolute;right:8px;top:2px;font-weight:bold;
-  animation:floatup 1.4s ease-out forwards;pointer-events:none;
+  position:absolute;right:0;top:-16px;font-weight:bold;font-size:12px;
+  animation:floatup 1.4s ease-out forwards;pointer-events:none;z-index:6;
 }
-.delta.up{color:var(--teal)} .delta.down{color:var(--danger)}
-@keyframes floatup{0%{opacity:0;transform:translateY(6px)}15%{opacity:1}100%{opacity:0;transform:translateY(-14px)}}
+.delta.up{color:#0a6c3c} .delta.down{color:var(--danger)}
+@keyframes floatup{0%{opacity:0;transform:translateY(6px)}15%{opacity:1}100%{opacity:0;transform:translateY(-12px)}}
 .pill.pulse{animation:pulse .6s ease}
-@keyframes pulse{50%{border-color:var(--amber)}}
-#bagBtn{
-  flex:0 0 auto;
-  border:1px solid var(--panel-edge);border-radius:6px;
-  background:var(--panel);
-  padding:8px 12px;min-height:40px;
-  font-size:16px;
+@keyframes pulse{50%{background:#fff}}
+.hudbtn{
+  border:2px solid;border-color:var(--chrome-hi) var(--chrome-lo) var(--chrome-lo) var(--chrome-hi);
+  background:var(--chrome);
+  padding:1px 10px;min-height:26px;font-size:14px;color:var(--ink);
+}
+.hudbtn:active{border-color:var(--chrome-lo) var(--chrome-hi) var(--chrome-hi) var(--chrome-lo)}
+
+/* ---------- stage / canvas ---------- */
+#stage{
+  position:relative;
+  width:min(100%, calc((100dvh - 120px) * 1.6), 1024px);
+  aspect-ratio:16/10;
+  background:#000;
+  border:2px solid #2a2a36;
+  box-shadow:0 0 40px rgba(0,0,0,.8);
+  flex:0 1 auto;
+}
+#screen{
+  width:100%;height:100%;display:block;
+  image-rendering:pixelated;
+  image-rendering:crisp-edges;
 }
 
-/* ---------- narrative ---------- */
-#narrative{
-  grid-area:narrative;
+/* ---------- Sierra text window ---------- */
+#textwin{
+  position:absolute;left:50%;top:7%;transform:translateX(-50%);
+  width:88%;max-height:72%;
   overflow-y:auto;
-  padding:20px 16px 28px;
-  -webkit-overflow-scrolling:touch;
+  background:var(--paper);
+  color:var(--ink);
+  border:3px solid var(--paper-edge);
+  outline:2px solid var(--paper);
+  outline-offset:-7px;
+  padding:14px 16px 10px;
+  font-size:clamp(12px,2.2vmin,16px);
+  line-height:1.55;
+  display:none;
   cursor:pointer;
+  z-index:3;
+  box-shadow:4px 6px 0 rgba(0,0,0,.45);
 }
-#narrative.fade{opacity:0;transform:translateY(8px)}
-#narrative{transition:opacity .25s ease, transform .25s ease}
+#textwin.on{display:block}
 #speaker{
   display:none;
-  font-size:12px;letter-spacing:.18em;text-transform:uppercase;
-  margin-bottom:14px;
+  font-size:.82em;letter-spacing:.18em;text-transform:uppercase;
+  color:#8a1d10;margin-bottom:8px;font-weight:bold;
 }
-#speaker.on{display:inline-block;border-bottom:1px solid currentColor;padding-bottom:2px}
-#sceneText p{margin-bottom:1.1em;max-width:68ch}
-#sceneText .cursor::after{content:"▌";color:var(--amber);animation:blink 1s steps(1) infinite}
+#speaker.on{display:block}
+#sceneText p{margin-bottom:.9em}
+#sceneText .cursor::after{content:"▌";color:#8a1d10;animation:blink 1s steps(1) infinite}
 @keyframes blink{50%{opacity:0}}
-#skipHint{color:var(--ink-dim);font-size:11px;letter-spacing:.1em;margin-top:8px;opacity:.6}
+#winHint{
+  text-align:right;color:#8a1d10;font-size:.8em;letter-spacing:.1em;
+  visibility:hidden;animation:blink 1.2s steps(1) infinite;
+}
+#winHint.on{visibility:visible}
 
-/* ---------- choices ---------- */
-#choices{
-  grid-area:choices;
-  display:flex;flex-direction:column;gap:8px;
-  padding:10px 12px calc(12px + env(safe-area-inset-bottom));
-  border-top:1px solid var(--panel-edge);
-  background:rgba(22,17,11,.96);
-  max-height:46vh;overflow-y:auto;
+/* ---------- caption (status line over canvas) ---------- */
+#caption{
+  position:absolute;left:0;right:0;bottom:0;
+  background:rgba(8,8,12,.82);
+  color:#ffd24a;
+  font-size:clamp(11px,2vmin,15px);
+  padding:5px 10px calc(5px + env(safe-area-inset-bottom));
+  min-height:1.6em;
+  text-align:center;
+  z-index:2;
+  pointer-events:none;
 }
-.choice{
-  text-align:left;
-  min-height:48px;
-  padding:12px 14px;
-  border:1px solid var(--amber-dim);
-  border-radius:6px;
-  background:linear-gradient(180deg,#2a2114,#231b10);
-  color:var(--ink);
-  line-height:1.4;
-  opacity:0;transform:translateY(6px);
-  transition:opacity .3s ease, transform .3s ease, border-color .15s;
-}
-.choice:not(.show){pointer-events:none}
-.choice.show{opacity:1;transform:none}
-@media (hover:hover){
-  .choice:not(:disabled):hover{border-color:var(--amber);background:#322617}
-}
-.choice:not(:disabled):active{border-color:var(--amber)}
-.choice .arrow{color:var(--amber);margin-right:8px}
-.choice:disabled{
-  border-color:var(--panel-edge);color:var(--ink-dim);
-  background:var(--panel);cursor:not-allowed;
-}
-.choice:disabled .arrow{color:var(--ink-dim)}
-.choice .hint{display:block;font-size:12px;color:var(--danger);margin-top:4px}
+#caption.locked{color:#ff7a5c}
+#caption:empty{display:none}
 
-/* ---------- inventory (desktop sidebar + mobile sheet) ---------- */
+/* ---------- touch controls ---------- */
+#dpad{
+  position:absolute;left:10px;bottom:34px;z-index:4;
+  display:none;
+  grid-template-columns:repeat(3,46px);
+  grid-template-rows:repeat(3,46px);
+  gap:2px;
+  opacity:.85;
+}
+#dpad button{
+  background:rgba(20,20,30,.55);
+  border:1px solid rgba(255,255,255,.35);
+  border-radius:8px;
+  color:#fff;font-size:18px;
+  touch-action:none;
+  user-select:none;-webkit-user-select:none;
+}
+#dpad button:active{background:rgba(232,163,61,.5)}
+#dpad .blank{visibility:hidden}
+#actBtn{
+  position:absolute;right:14px;bottom:44px;z-index:4;
+  display:none;
+  width:64px;height:64px;border-radius:50%;
+  background:rgba(232,163,61,.35);
+  border:2px solid rgba(255,210,74,.7);
+  color:#ffd24a;font-size:13px;letter-spacing:.05em;
+  touch-action:none;user-select:none;-webkit-user-select:none;
+}
+#actBtn:active{background:rgba(232,163,61,.7)}
+@media (pointer:coarse){
+  #dpad{display:grid}
+  #actBtn{display:block}
+}
+
+/* ---------- inventory: desktop sidebar + mobile sheet ---------- */
 #sidebar{display:none}
 .inv-title{
   font-size:12px;letter-spacing:.15em;text-transform:uppercase;
-  color:var(--ink-dim);margin-bottom:10px;
+  color:#888;margin-bottom:10px;
 }
 .inv-list{list-style:none}
 .inv-list li{
-  border:1px solid var(--panel-edge);border-radius:6px;
-  background:var(--panel);
+  border:1px solid #3a3a46;
+  background:#16161e;
   padding:8px 10px;margin-bottom:8px;font-size:14px;
 }
 .inv-list li b{color:var(--amber);display:block}
-.inv-list li span{color:var(--ink-dim);font-size:12px}
-.inv-empty{color:var(--ink-dim);font-size:13px;font-style:italic}
+.inv-list li span{color:#999;font-size:12px}
+.inv-empty{color:#888;font-size:13px;font-style:italic}
 .sysbtns{display:flex;gap:8px;margin-top:14px}
 .sysbtn{
   flex:1;min-height:44px;
-  border:1px solid var(--teal-dim);border-radius:6px;
-  background:var(--panel);color:var(--teal);
+  border:2px solid;border-color:var(--chrome-hi) var(--chrome-lo) var(--chrome-lo) var(--chrome-hi);
+  background:var(--chrome);color:var(--ink);
   font-size:14px;letter-spacing:.05em;
 }
-@media (hover:hover){ .sysbtn:hover{border-color:var(--teal)} }
+.sysbtn:active{border-color:var(--chrome-lo) var(--chrome-hi) var(--chrome-hi) var(--chrome-lo)}
+@media (min-width:980px){
+  #sidebar{display:block;width:230px;flex:0 0 auto;max-height:80vh;overflow-y:auto}
+}
 
 #sheet{
   position:fixed;inset:auto 0 0 0;z-index:40;
-  background:var(--bg1);
-  border-top:1px solid var(--amber-dim);
-  border-radius:14px 14px 0 0;
+  background:#14141c;
+  border-top:2px solid var(--amber);
   padding:16px 16px calc(20px + env(safe-area-inset-bottom));
   max-height:70vh;max-height:70dvh;overflow-y:auto;
   transform:translateY(105%);
@@ -190,7 +227,7 @@ button{
 #sheet.open{transform:none}
 #sheetClose{
   width:100%;min-height:44px;margin-top:6px;
-  color:var(--ink-dim);border:1px solid var(--panel-edge);border-radius:6px;
+  color:#aaa;border:1px solid #3a3a46;
 }
 #scrim{
   position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.55);
@@ -198,7 +235,7 @@ button{
 }
 #scrim.on{opacity:1;pointer-events:auto}
 
-/* ---------- overlay: chapter cards, endings, save modal ---------- */
+/* ---------- overlay: chapter cards, endings ---------- */
 #overlay{
   position:fixed;inset:0;z-index:50;
   display:none;
@@ -210,10 +247,10 @@ button{
 #overlay.on{display:flex}
 #overlay.fadein .card{animation:cardin 1.2s ease both}
 @keyframes cardin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-.card{max-width:560px;width:100%}
+.card{max-width:560px;width:100%;max-height:92vh;max-height:92dvh;overflow-y:auto}
 .card .kicker{
   font-size:13px;letter-spacing:.5em;text-transform:uppercase;
-  color:var(--ink-dim);margin-bottom:14px;
+  color:#8a8270;margin-bottom:14px;
 }
 .card h1{
   font-family:var(--serif);
@@ -222,24 +259,24 @@ button{
   color:var(--amber);
   margin-bottom:22px;
 }
-.card .body{text-align:left;margin:0 auto 20px;max-width:46ch}
+.card .body{text-align:left;margin:0 auto 20px;max-width:46ch;color:#e8e0d0}
 .card .body p{margin-bottom:1em;font-size:15px}
 .card .stats{
-  font-size:13px;color:var(--ink-dim);
-  border-top:1px solid var(--panel-edge);
+  font-size:13px;color:#8a8270;
+  border-top:1px solid #3a2e1e;
   padding-top:14px;margin-bottom:20px;
 }
 .card .bigbtn{
   min-height:48px;padding:12px 34px;
-  border:1px solid var(--amber-dim);border-radius:6px;
+  border:1px solid #a87526;
   color:var(--amber);letter-spacing:.2em;text-transform:uppercase;font-size:13px;
 }
 @media (hover:hover){ .card .bigbtn:hover{border-color:var(--amber);background:#241b0e} }
 #overlay.end-peace{background:#081413} #overlay.end-peace h1{color:var(--teal)}
-#overlay.end-doom{background:#170a06}  #overlay.end-doom h1{color:var(--danger)}
+#overlay.end-doom{background:#170a06}  #overlay.end-doom h1{color:#d65a3a}
 #overlay.end-empire{background:#171005}
 
-/* save modal */
+/* ---------- save modal ---------- */
 #saveModal{
   position:fixed;inset:0;z-index:60;display:none;
   align-items:center;justify-content:center;background:rgba(0,0,0,.7);padding:16px;
@@ -247,69 +284,62 @@ button{
 #saveModal.on{display:flex}
 .modal{
   width:100%;max-width:520px;max-height:88vh;max-height:88dvh;overflow-y:auto;
-  background:var(--bg1);border:1px solid var(--panel-edge);border-radius:10px;
+  background:var(--paper);color:var(--ink);
+  border:3px solid var(--paper-edge);
+  outline:2px solid var(--paper);outline-offset:-7px;
   padding:18px;text-align:left;
+  box-shadow:6px 8px 0 rgba(0,0,0,.5);
 }
-.modal h2{font-family:var(--serif);color:var(--amber);font-weight:normal;margin-bottom:12px}
-.modal label{display:block;font-size:12px;color:var(--ink-dim);letter-spacing:.1em;text-transform:uppercase;margin:12px 0 6px}
+.modal h2{font-family:var(--serif);color:#8a1d10;font-weight:normal;margin-bottom:12px}
+.modal label{display:block;font-size:12px;color:#6a6354;letter-spacing:.1em;text-transform:uppercase;margin:12px 0 6px}
 .modal textarea{
   width:100%;min-height:74px;resize:vertical;
-  background:#0e0b07;border:1px solid var(--panel-edge);border-radius:6px;
+  background:#fffdf4;border:2px solid #6a6354;
   color:var(--ink);font-family:var(--mono);font-size:16px;padding:8px;
   word-break:break-all;
 }
+.modal .sysbtn{color:var(--ink)}
 .modal .row{display:flex;gap:8px;margin-top:8px}
 #saveMsg{font-size:13px;min-height:1.4em;margin-top:10px}
-#saveMsg.ok{color:var(--teal)} #saveMsg.err{color:var(--danger)}
-
-/* ---------- desktop ≥720px ---------- */
-@media (min-width:720px){
-  #app{
-    grid-template-columns:1fr 260px;
-    grid-template-rows:auto 1fr auto;
-    grid-template-areas:"hud hud" "narrative sidebar" "choices sidebar";
-    column-gap:0;
-  }
-  #bagBtn{display:none}
-  #sheet,#scrim{display:none}
-  #sidebar{
-    display:block;grid-area:sidebar;
-    border-left:1px solid var(--panel-edge);
-    padding:18px 14px;overflow-y:auto;
-  }
-  #narrative{padding:30px 36px}
-  #sceneText{max-width:68ch;margin:0 auto}
-  #speakerWrap{max-width:68ch;margin:0 auto}
-  #choices{padding:14px 36px 18px;max-height:none}
-  .choice{max-width:68ch;width:100%;margin:0 auto}
-}
+#saveMsg.ok{color:#0a6c3c} #saveMsg.err{color:var(--danger)}
 </style>
 </head>
 <body>
 <div id="app">
   <header id="hud">
-    <div class="pill" data-stat="money"><div class="lbl"><span>MONEY</span><span class="val" id="v-money">$0</span></div><div class="bar"><i id="b-money" style="background:var(--amber)"></i></div></div>
+    <div class="pill" data-stat="money"><div class="lbl"><span>MONEY</span><span class="val" id="v-money">$0</span></div><div class="bar"><i id="b-money"></i></div></div>
     <div class="pill" data-stat="heat"><div class="lbl"><span>HEAT</span><span class="val" id="v-heat">0</span></div><div class="bar"><i id="b-heat"></i></div></div>
     <div class="pill" data-stat="trust"><div class="lbl"><span>FAMILY</span><span class="val" id="v-trust">0</span></div><div class="bar"><i id="b-trust"></i></div></div>
     <div class="pill" data-stat="health"><div class="lbl"><span>HEALTH</span><span class="val" id="v-health">0</span></div><div class="bar"><i id="b-health"></i></div></div>
-    <button id="bagBtn" aria-label="Inventory and save menu">🎒</button>
+    <button class="hudbtn" id="bagBtn" aria-label="Inventory">🎒 Items</button>
+    <button class="hudbtn" data-open-save>💾 Save</button>
   </header>
 
-  <main id="narrative">
-    <div id="speakerWrap"><span id="speaker"></span></div>
-    <div id="sceneText"></div>
-    <div id="skipHint">tap to skip ▸</div>
-  </main>
-
-  <div id="choices"></div>
-
-  <aside id="sidebar">
-    <div class="inv-title">Inventory</div>
-    <ul class="inv-list" id="invDesktop"></ul>
-    <div class="sysbtns">
-      <button class="sysbtn" data-open-save>Save / Load</button>
+  <div id="main">
+    <div id="stage">
+      <canvas id="screen" width="320" height="200"></canvas>
+      <div id="textwin">
+        <span id="speaker"></span>
+        <div id="sceneText"></div>
+        <div id="winHint">▼ continue</div>
+      </div>
+      <div id="caption"></div>
+      <div id="dpad">
+        <button class="blank"></button><button data-dir="up" aria-label="Up">▲</button><button class="blank"></button>
+        <button data-dir="left" aria-label="Left">◀</button><button class="blank"></button><button data-dir="right" aria-label="Right">▶</button>
+        <button class="blank"></button><button data-dir="down" aria-label="Down">▼</button><button class="blank"></button>
+      </div>
+      <button id="actBtn" aria-label="Interact">DO</button>
     </div>
-  </aside>
+
+    <aside id="sidebar">
+      <div class="inv-title">Inventory</div>
+      <ul class="inv-list" id="invDesktop"></ul>
+      <div class="sysbtns">
+        <button class="sysbtn" data-open-save>Save / Load</button>
+      </div>
+    </aside>
+  </div>
 </div>
 
 <div id="scrim"></div>
@@ -407,6 +437,373 @@ const EVENTS = [
     weight:(s)=> s.stats.heat >= 40 ? 2 : 0.8 },
 ];
 const NO_EVENT_WEIGHT = 2.5;
+
+/* ============================================================
+   VISUAL DATA — sprites, rooms, staging
+   (presentation only: nothing here affects story logic)
+   ============================================================ */
+
+/* ----- people: procedural sprite configs (drawn by buildPersonFrame) ----- */
+const PEOPLE = {
+  walt:    { skin:"#dcb088", hair:"#6a5640", style:"recede", top:"#7a7448", pants:"#3c3f52", shoes:"#1c1c1c", glasses:true },
+  walt_bald:{ skin:"#dcb088", hair:"#6a5640", style:"bald", top:"#7a7448", pants:"#3c3f52", shoes:"#1c1c1c", glasses:true },
+  skyler:  { skin:"#e8c4a0", hair:"#d8c070", style:"long", top:"#4a9a94", pants:"#8a8a92", shoes:"#3a3a3a" },
+  jesse:   { skin:"#d8b090", hair:"#caa", style:"beanie", beanie:"#2a2a32", top:"#c8a830", pants:"#5a6a8a", shoes:"#e8e8e8", baggy:true },
+  hank:    { skin:"#d8a878", hair:"#000", style:"bald", top:"#c87838", pants:"#4a4438", shoes:"#2a2218", broad:true },
+  marie:   { skin:"#e8c4a0", hair:"#3a2e28", style:"bob", top:"#7a4a9a", pants:"#2a2a32", shoes:"#3a3a3a" },
+  waltjr:  { skin:"#dcb088", hair:"#5a4632", style:"short", top:"#b03830", pants:"#3c4a6a", shoes:"#e8e8e8", crutches:true },
+  saul:    { skin:"#e0b894", hair:"#4a3a2a", style:"sidepart", top:"#2c3248", pants:"#2c3248", shoes:"#1c1c1c", tie:"#c83a22", shirt:"#f0f0f0" },
+  tuco:    { skin:"#c89868", hair:"#181818", style:"short", top:"#8a8a8a", pants:"#3a3a3a", shoes:"#1c1c1c", goatee:true, chain:true, broad:true },
+  domingo: { skin:"#c89868", hair:"#181818", style:"short", top:"#a83028", pants:"#3a3e4a", shoes:"#1c1c1c", goatee:true },
+  doctor:  { skin:"#d8b090", hair:"#9a9a9a", style:"short", top:"#5a7a9a", pants:"#4a4a52", shoes:"#1c1c1c", coat:"#f0f0ec", glasses:true },
+  elliott: { skin:"#e0c0a0", hair:"#b8b0a0", style:"short", top:"#4a4a55", pants:"#4a4a55", shoes:"#1c1c1c", tie:"#7a8aa0", shirt:"#f0f0f0" },
+};
+
+/* ----- rooms: painter functions; coordinates are 320x200 logical ----- */
+/* each: draw(h) with helper api; walk band; default spawn + exit position */
+const ROOMS = {
+
+  kitchen: {
+    walk:{y0:128,y1:190}, spawn:[160,170], exit:[306,150],
+    draw(h){
+      h.g(0,0,320,118,"#caa46a","#a8845a");                       // wall
+      h.r(0,114,320,4,"#7a5a3a");                                  // skirting
+      for(let y=118;y<200;y+=12) for(let x=-(y%24===118%24?0:6);x<320;x+=24)
+        h.r(x,y,12,12,((x+y)/12|0)%2?"#b89868":"#a88858");         // tile floor
+      h.win(36,22,64,52,"#88b8d8");                                // window
+      h.r(30,18,4,60,"#e8d8b0"); h.r(102,18,4,60,"#e8d8b0");       // curtains
+      h.r(150,40,52,40,"#f0e8d8"); h.r(154,44,44,14,"#c8c0a8");    // cabinets
+      h.r(150,82,60,32,"#d8cdb4"); h.r(150,80,60,4,"#b8a888");     // counter
+      h.r(216,28,40,86,"#e8e8e0"); h.r(220,52,32,2,"#a8a8a0");     // fridge
+      h.r(248,36,3,8,"#888");                                      // handle
+      h.r(60,138,76,8,"#8a5c34"); h.r(64,146,6,22,"#6a4424");      // table
+      h.r(126,146,6,22,"#6a4424");
+      h.e(98,138,14,4,"#c8a040");                                  // fruit bowl
+      h.r(270,118,50,82,"#1a140e");                                 // hallway dark
+      h.r(296,128,18,60,"#5a3e22");                                 // door
+    },
+  },
+
+  living: {
+    walk:{y0:130,y1:190}, spawn:[160,172], exit:[300,152],
+    draw(h){
+      h.g(0,0,320,120,"#9a8a6a","#7e7054");
+      h.r(0,116,320,4,"#5a4a36");
+      h.dith(0,120,320,80,"#8a7456","#7a6448");                    // carpet
+      h.r(40,30,26,32,"#6a5a42"); h.r(44,34,18,24,"#d8e8e8");      // framed photos
+      h.r(78,38,20,24,"#6a5a42"); h.r(82,42,12,16,"#c8d8b8");
+      h.r(50,128,96,30,"#b08c58"); h.r(54,120,88,12,"#bc9864");    // sofa
+      h.r(50,124,10,34,"#9a784a"); h.r(136,124,10,34,"#9a784a");
+      h.r(216,96,52,34,"#2a2a2e"); h.r(220,100,44,24,"#3a587a");   // TV
+      h.r(226,130,32,18,"#5a4632");                                 // TV stand
+      h.r(288,70,4,58,"#7a5a38"); h.e(290,64,12,10,"#e8d8a0");     // lamp
+      h.r(296,128,20,62,"#5a3e22"); h.r(298,154,3,6,"#c8a040");    // door
+    },
+  },
+
+  carwash: {
+    walk:{y0:140,y1:192}, spawn:[80,176], exit:[20,170],
+    draw(h){
+      h.g(0,0,320,96,"#7ab0d8","#c8e0ee");                          // sky
+      h.e(70,18,16,8,"#fff"); h.e(180,30,22,8,"#f4f8fc");          // clouds
+      h.r(36,58,210,78,"#dce8ec"); h.r(36,54,210,6,"#9ab8c8");     // building
+      h.r(72,76,92,60,"#22303a");                                   // wash bay
+      h.r(80,84,12,52,"#3a5a6a"); h.r(140,84,12,52,"#3a5a6a");     // brushes
+      h.e(196,44,20,14,"#2858a8"); h.t("A1",188,48,"#fff");        // sign
+      h.r(0,136,320,64,"#8a8a90");                                  // pavement
+      h.dith(0,136,320,8,"#9a9aa0","#8a8a90");
+      h.r(252,118,58,26,"#a83028"); h.e(264,146,7,5,"#1c1c1c");    // car
+      h.e(298,146,7,5,"#1c1c1c"); h.r(258,110,38,12,"#c8d8e0");
+      h.r(160,150,14,10,"#c8b830");                                 // bucket
+    },
+  },
+
+  doctor: {
+    walk:{y0:132,y1:188}, spawn:[120,170], exit:[20,160],
+    draw(h){
+      h.g(0,0,320,118,"#cfdcd8","#b4c8c4");
+      h.r(0,114,320,4,"#7a8a88");
+      h.r(0,118,320,82,"#d8d8d0");                                  // lino
+      h.dith(0,118,320,82,"#ccccc4","#d8d8d0");
+      h.r(58,30,66,46,"#e8eef4"); h.r(62,34,58,38,"#cfe2f2");      // lightbox
+      h.e(84,52,9,12,"#8aa8c4"); h.e(102,50,8,11,"#8aa8c4");       // scan shapes
+      h.r(58,28,66,3,"#8a9aa8");
+      h.r(196,88,92,30,"#b8a888"); h.r(196,118,8,38,"#9a8868");    // desk
+      h.r(280,118,8,38,"#9a8868"); h.r(208,80,30,8,"#e8e8e8");     // papers
+      h.r(292,64,16,30,"#3a7a42"); h.r(296,94,8,12,"#8a5c34");     // plant
+      h.r(28,120,26,12,"#7a9ab0"); h.r(30,108,22,12,"#8aaac0");    // chair
+      h.r(10,124,16,64,"#9ab0ac");                                  // door
+    },
+  },
+
+  gray_matter: {
+    walk:{y0:136,y1:190}, spawn:[160,176], exit:[24,166],
+    draw(h){
+      h.g(0,0,320,124,"#e8e0cc","#cabfa4");
+      h.r(34,28,18,104,"#f4eedd"); h.r(34,28,4,104,"#d8d0b8");     // columns
+      h.r(266,28,18,104,"#f4eedd"); h.r(266,28,4,104,"#d8d0b8");
+      for(let i=0;i<7;i++) h.e(140+i*7,22,2,3,"#f0d870");          // chandelier
+      h.r(138,10,52,4,"#9a8a5a"); h.r(162,2,4,10,"#9a8a5a");
+      h.g(0,128,320,72,"#b8ab90","#8c8068");                       // floor
+      h.r(96,108,128,26,"#f4f4ee"); h.r(100,104,120,6,"#fff");     // banquet table
+      for(let i=0;i<5;i++) h.r(108+i*24,96,4,9,"#d8e8f0");         // glasses
+      h.r(8,128,20,64,"#c4b894");                                   // exit
+    },
+  },
+
+  jesse_house: {
+    walk:{y0:130,y1:190}, spawn:[120,170], exit:[24,158],
+    draw(h){
+      h.g(0,0,320,118,"#8a7a96","#6e6080");
+      h.r(0,114,320,4,"#4a3e54");
+      for(let y=118;y<200;y+=10) h.r(0,y,320,5,(y/10|0)%2?"#7a5638":"#6a4a30"); // wood floor
+      h.r(40,34,30,40,"#3a3242"); h.r(44,38,22,32,"#c84a8a");      // poster
+      h.r(86,30,26,34,"#3a3242"); h.r(90,34,18,26,"#48a8c8");      // poster 2
+      h.r(48,128,84,28,"#5a7a4a"); h.r(52,120,76,12,"#688a56");    // green couch
+      h.r(48,124,9,32,"#4a6a3e"); h.r(123,124,9,32,"#4a6a3e");
+      h.r(196,134,52,8,"#7a6a4a"); h.r(200,142,5,20,"#5a4c34");    // card table
+      h.r(240,142,5,20,"#5a4c34");
+      h.r(150,176,22,8,"#c8a05a"); h.r(152,174,18,3,"#e8d8b8");    // pizza box
+      h.r(262,40,34,76,"#4a3e54"); h.r(268,48,22,28,"#7a8ac8");    // window night-ish
+      h.r(10,124,18,62,"#3e3448");                                  // door
+    },
+  },
+
+  basement: {
+    walk:{y0:130,y1:188}, spawn:[100,168], exit:[288,140],
+    draw(h){
+      h.r(0,0,320,200,"#262220");
+      h.g(0,0,320,110,"#34302c","#262220");
+      h.r(0,118,320,82,"#3a3632");                                  // concrete
+      h.dith(0,118,320,82,"#332f2b","#3a3632");
+      h.r(56,22,30,18,"#5a6878");                                   // grim window
+      h.g(56,40,46,80,"rgba(140,160,180,.12)","rgba(140,160,180,0)"); // light beam
+      h.r(156,72,8,86,"#6a6a72"); h.r(154,72,12,5,"#7a7a82");      // pole
+      for(let i=0;i<6;i++){ h.r(236+i*13,150-i*16,14,8,"#54483a"); h.r(236+i*13,158-i*16,4,200,"#3e362c"); } // stairs
+      h.r(120,166,30,8,"#c8c4b8");                                  // old mattress?
+      h.e(186,170,10,3,"#202020");                                  // bucket shadow
+    },
+  },
+
+  desert: {
+    walk:{y0:138,y1:192}, spawn:[90,174], exit:[24,176],
+    draw(h){
+      h.g(0,0,320,70,"#5a88c8","#e8b878");                          // big sky
+      h.g(0,70,320,40,"#e8b878","#d89860");
+      h.e(48,86,42,16,"#8a4a36"); h.r(28,92,64,18,"#8a4a36");      // mesa
+      h.e(150,94,30,10,"#9a5a40");
+      h.r(0,108,320,92,"#c89058");                                  // ground
+      h.dith(0,108,320,92,"#ba8450","#c89058");
+      h.r(0,106,320,3,"#a87848");
+      // the RV
+      h.r(208,84,98,58,"#e8e0d0"); h.r(208,108,98,8,"#b87838");    // body + stripe
+      h.r(208,84,98,6,"#c8c0b0");
+      h.r(216,92,22,14,"#88b0c8"); h.r(266,92,18,14,"#88b0c8");    // windows
+      h.r(246,104,16,36,"#9a9088"); h.r(258,120,3,5,"#5a5a5a");    // door
+      h.e(228,146,9,6,"#2a2a2a"); h.e(288,146,9,6,"#2a2a2a");      // wheels
+      h.e(228,146,4,3,"#8a8a8a"); h.e(288,146,4,3,"#8a8a8a");
+      h.e(60,150,10,4,"#6a7a3a"); h.e(120,178,12,5,"#6a7a3a");     // scrub
+      h.e(180,162,8,3,"#7a8a4a");
+    },
+  },
+
+  saul_office: {
+    walk:{y0:134,y1:188}, spawn:[110,170], exit:[24,162],
+    draw(h){
+      for(let x=0;x<320;x+=24){ h.r(x,24,12,96,"#c83a3a"); h.r(x+12,24,12,96,"#e8e0d8"); } // stripes
+      h.r(0,0,320,24,"#2c3a6a");                                    // stars band
+      for(let i=0;i<10;i++) h.r(12+i*32,10,3,3,"#f0f0f0");
+      h.r(0,120,320,80,"#7a3a2a");                                  // carpet
+      h.dith(0,120,320,80,"#6e3426","#7a3a2a");
+      h.r(92,96,140,34,"#5a3a22"); h.r(96,90,132,8,"#6a4a2e");     // big desk
+      h.r(98,130,10,30,"#4a2e1a"); h.r(216,130,10,30,"#4a2e1a");
+      h.r(136,76,22,16,"#e8e8e0");                                  // papers
+      h.r(40,38,28,36,"#c8a040"); h.r(44,42,20,28,"#f0ead8");      // diploma
+      h.r(252,38,28,36,"#c8a040"); h.r(256,42,20,28,"#f0ead8");
+      h.r(10,126,18,60,"#5a2e20");                                  // door
+    },
+  },
+
+  tuco_den: {
+    walk:{y0:132,y1:188}, spawn:[90,170], exit:[20,160],
+    draw(h){
+      h.g(0,0,320,120,"#6a2018","#481410");
+      h.r(0,116,320,4,"#301008");
+      h.r(0,120,320,80,"#3c2018");
+      h.dith(0,120,320,80,"#341c14","#3c2018");
+      h.r(180,98,86,32,"#5a3a22"); h.r(184,92,78,8,"#6a4a2e");     // money table
+      for(let i=0;i<6;i++) h.r(192+i*12,84,9,9,"#3a7a42");         // cash stacks
+      h.r(44,124,80,28,"#3a2a26"); h.r(48,116,72,12,"#463430");    // leather sofa
+      for(let i=0;i<8;i++) h.r(288,30+i*16,3,12,"#c89858");        // bead curtain
+      for(let i=0;i<8;i++) h.r(298,38+i*16,3,12,"#a87848");
+      h.e(150,30,14,10,"#e8a868"); h.r(148,40,4,14,"#5a3a22");     // dim lamp
+      h.r(8,124,16,60,"#2c1410");
+    },
+  },
+
+  garage: {
+    walk:{y0:134,y1:190}, spawn:[160,172], exit:[296,160],
+    draw(h){
+      h.g(0,0,320,118,"#8a8a92","#6e6e78");
+      h.r(0,114,320,4,"#50505a");
+      h.r(0,118,320,82,"#62626c");                                  // concrete
+      h.dith(0,118,320,82,"#5a5a64","#62626c");
+      h.r(30,84,96,30,"#7a5a36"); h.r(34,78,88,8,"#8a6a42");       // workbench
+      h.r(40,60,70,14,"#4a4a52");                                   // tool board
+      h.r(44,63,6,8,"#c8c8c8"); h.r(56,63,8,4,"#c83a22"); h.r(70,64,10,5,"#c8a040");
+      h.e(190,140,46,18,"#2a6a3a"); h.e(190,138,46,16,"#34804a");  // poker table
+      h.r(170,150,6,26,"#4a3a28"); h.r(206,150,6,26,"#4a3a28");
+      for(let i=0;i<3;i++) h.r(176+i*14,128,4,9,"#b86a18");        // beer bottles
+      h.r(284,120,28,68,"#8a8a8a"); h.r(288,124,20,56,"#a0a0a8");  // garage door
+    },
+  },
+
+  street: {
+    walk:{y0:148,y1:192}, spawn:[160,176], exit:[300,176],
+    draw(h){
+      h.g(0,0,320,90,"#0e1630","#243454");                          // night sky
+      for(let i=0;i<24;i++) h.r((i*47)%318,(i*29)%70,1,1,"#e8e8f0");
+      h.e(268,22,11,11,"#e8e4c8"); h.e(263,20,9,9,"#0e1630");      // moon
+      h.r(0,90,320,4,"#1a2238");
+      h.r(20,64,70,46,"#283048"); h.r(34,72,14,12,"#e8c868");      // house 1 + lit window
+      h.r(52,52,30,14,"#202840");                                   // roof
+      h.r(120,60,80,50,"#303a52"); h.r(136,70,14,12,"#3a4a6a");    // house 2
+      h.r(168,70,14,12,"#e8c868");
+      h.r(228,68,66,42,"#283048"); h.r(244,76,12,12,"#3a4a6a");    // house 3
+      h.r(0,110,320,30,"#2e3440");                                  // lawns band
+      h.dith(0,110,320,30,"#28303c","#2e3440");
+      h.r(0,140,320,60,"#383840");                                  // asphalt
+      h.r(0,140,320,4,"#484850");
+      for(let x=10;x<320;x+=40) h.r(x,168,18,3,"#c8c050");         // road dashes
+      h.r(248,52,4,90,"#5a5a64"); h.e(250,50,10,5,"#e8d890");      // streetlight
+      h.g(232,55,38,86,"rgba(232,216,144,.14)","rgba(232,216,144,0)");
+    },
+  },
+};
+
+/* ----- staging: scene id -> room, spawn, props, hotspots ----- */
+/* spots[i] corresponds to choices[i]; linear scenes auto-place an exit
+   marker (room default or `exit`). cast = ambient characters. */
+const STAGES = {
+  /* chapter 1 */
+  ch1_birthday:   { room:"living", walt:[110,176], cast:[["skyler",70,140],["waltjr",130,142]],
+                    spots:[{x:250,y:160,char:"hank"},{x:54,y:168,obj:"door"}] },
+  ch1_carwash:    { room:"carwash", walt:[200,180], exit:[24,170] },
+  ch1_diagnosis:  { room:"doctor", walt:[150,172], cast:[["doctor",236,134]],
+                    spots:[{x:30,y:164,obj:"door"},{x:120,y:140,obj:"mark"}] },
+  ch1_dinner:     { room:"kitchen", walt:[100,168], cast:[["skyler",80,146],["waltjr",126,148]], exit:[300,152] },
+  ch1_elliott:    { room:"gray_matter", walt:[160,180], cast:[["skyler",210,150]],
+                    spots:[{x:118,y:148,char:"elliott"},{x:26,y:168,obj:"door"}] },
+  ch1_accept:     { room:"gray_matter", walt:[120,170], exit:[26,168] },
+  ch1_ridealong:  { room:"street", walt:[120,180], cast:[["hank",90,170]],
+                    spots:[{x:226,y:166,obj:"mark"},{x:60,y:186,obj:"door"}] },
+  ch1_sleepless:  { room:"kitchen", tint:"night", walt:[160,176],
+                    spots:[{x:226,y:148,obj:"phone"},{x:302,y:152,obj:"door"}] },
+  ch1_jesse:      { room:"jesse_house", walt:[230,176],
+                    spots:[{x:96,y:152,char:"jesse"},{x:170,y:140,obj:"mark"}] },
+  ch1_money:      { room:"street", walt:[80,180],
+                    spots:[{x:180,y:166,char:"jesse"},{x:264,y:158,obj:"cash"}] },
+
+  /* chapter 2 */
+  ch2_drive:      { room:"desert", walt:[60,180], cast:[["jesse",150,168]], exit:[252,152], exitLabel:"Step into the RV" },
+  ch2_cook:       { room:"desert", walt:[180,170],
+                    spots:[{x:120,y:172,char:"jesse"},{x:40,y:184,obj:"mark"}] },
+  ch2_dealgone:   { room:"desert", walt:[160,178], cast:[["jesse",60,180]],
+                    spots:[{x:252,y:156,obj:"door"},{x:120,y:154,char:"domingo"}] },
+  ch2_aftermath:  { room:"desert", tint:"dusk", walt:[140,180], cast:[["jesse",80,172]], exit:[24,176] },
+  ch2_krazy8:     { room:"basement", walt:[80,170],
+                    spots:[{x:166,y:150,char:"domingo"},{x:226,y:170,obj:"envelope"},{x:40,y:142,obj:"mark"}] },
+  ch2_release:    { room:"basement", walt:[100,168], cast:[["domingo",170,150]], exit:[288,140] },
+  ch2_payoff:     { room:"street", walt:[120,176], cast:[["domingo",200,168]], exit:[300,176] },
+  ch2_hardchoice: { room:"basement", walt:[120,170], exit:[288,140] },
+  ch2_robbed:     { room:"desert", tint:"dusk", walt:[150,182], cast:[["jesse",100,176]], exit:[24,176] },
+  ch2_broke:      { room:"kitchen", tint:"night", walt:[140,170], exit:[300,152] },
+  ch2_firstcash:  { room:"jesse_house", walt:[150,176], cast:[["jesse",220,160]], exit:[24,158] },
+  ch2_bill:       { room:"doctor", walt:[120,176], cast:[["skyler",60,150]],
+                    spots:[{x:236,y:138,char:"doctor"},{x:170,y:128,obj:"mark"},{x:24,y:166,obj:"door"}] },
+  ch2_skyler:     { room:"living", walt:[200,176],
+                    spots:[{x:100,y:152,char:"skyler"},{x:290,y:166,obj:"mark"},{x:150,y:140,obj:"mark"}] },
+
+  /* chapter 3 */
+  ch3_intervention:{ room:"living", walt:[230,178],
+                    cast:[["marie",60,140],["hank",96,142],["waltjr",136,144]],
+                    spots:[{x:170,y:152,char:"skyler"},{x:280,y:144,obj:"mark"}] },
+  ch3_chemo:      { room:"street", walt:[60,178],
+                    spots:[{x:200,y:160,obj:"hat"},{x:300,y:178,obj:"door"}] },
+  ch3_money:      { room:"kitchen", walt:[160,176],
+                    spots:[{x:96,y:150,obj:"mark"},{x:50,y:140,obj:"photo"},{x:226,y:148,obj:"phone"}] },
+  ch3_saul:       { room:"saul_office", walt:[110,176], cast:[["saul",160,140]], exit:[26,164] },
+  ch3_hank:       { room:"garage", walt:[110,176],
+                    spots:[{x:184,y:128,obj:"mark"},{x:240,y:160,char:"hank"}] },
+  ch3_marie:      { room:"kitchen", walt:[200,176],
+                    spots:[{x:90,y:152,char:"skyler"},{x:226,y:148,obj:"phone"}] },
+  ch3_jesse:      { room:"jesse_house", walt:[210,176],
+                    spots:[{x:100,y:152,char:"jesse"},{x:26,y:160,obj:"door"}] },
+  ch3_skylerfind: { room:"kitchen", walt:[230,176],
+                    spots:[{x:100,y:152,char:"skyler"},{x:160,y:136,obj:"mark"},{x:50,y:144,obj:"photo"}] },
+  ch3_close:      { room:"kitchen", walt:[200,170], cast:[["waltjr",96,148]], exit:[300,152] },
+
+  /* chapter 4 */
+  ch4_stall:      { room:"jesse_house", walt:[160,180],
+                    spots:[{x:280,y:140,obj:"hat"},{x:96,y:152,char:"jesse"},{x:60,y:176,obj:"mark"},{x:218,y:152,obj:"cash"}] },
+  ch4_tuco_self:  { room:"tuco_den", walt:[80,176],
+                    spots:[{x:152,y:142,obj:"bag"},{x:226,y:148,char:"tuco"}] },
+  ch4_tuco_jesse: { room:"doctor", walt:[120,176], cast:[["jesse",40,150]],
+                    spots:[{x:230,y:136,obj:"mark"},{x:24,y:170,obj:"door"}] },
+  ch4_revenge:    { room:"tuco_den", walt:[70,176], cast:[["tuco",230,148]], exit:[20,160] },
+  ch4_aftermath:  { room:"tuco_den", walt:[90,178], cast:[["tuco",240,150]],
+                    spots:[{x:160,y:156,obj:"mark"},{x:20,y:164,obj:"door"}] },
+  ch4_small:      { room:"street", walt:[100,180], exit:[300,176] },
+  ch4_pressure:   { room:"garage", tint:"night", walt:[150,176],
+                    spots:[{x:70,y:142,obj:"phone"},{x:296,y:164,obj:"door"}] },
+  ch4_cashout:    { room:"living", walt:[120,176], exit:[300,156] },
+  ch4_family:     { room:"doctor", walt:[100,172], cast:[["skyler",150,150],["doctor",236,134]], exit:[24,166] },
+
+  /* chapter 5 */
+  ch5_cross:      { room:"desert", tint:"dusk", walt:[100,182],
+                    spots:[{x:200,y:160,obj:"hat"},{x:30,y:170,obj:"door"},{x:252,y:152,obj:"mark"}] },
+  ch5_empire:     { room:"tuco_den", walt:[80,176], cast:[["tuco",226,148]], exit:[20,160] },
+  ch5_bigcook:    { room:"desert", walt:[150,180], exit:[252,152], exitLabel:"Begin the weekend" },
+  ch5_throne:     { room:"desert", tint:"dusk", walt:[140,180],
+                    spots:[{x:220,y:160,obj:"phone"},{x:30,y:172,obj:"door"}] },
+  ch5_drift:      { room:"desert", walt:[160,180], cast:[["jesse",90,172]],
+                    spots:[{x:30,y:172,obj:"door"},{x:220,y:160,obj:"phone"}] },
+  ch5_hankclose:  { room:"kitchen", walt:[200,178],
+                    spots:[{x:226,y:148,obj:"phone"},{x:96,y:152,char:"hank"},{x:160,y:136,obj:"mark"}] },
+  ch5_exit_scorched:{ room:"kitchen", tint:"night", walt:[160,176], exit:[300,152] },
+  ch5_exit:       { room:"jesse_house", walt:[200,176], cast:[["jesse",96,152]], exit:[26,160] },
+  ch5_lastsale:   { room:"desert", tint:"dusk", walt:[120,180], exit:[24,176] },
+  ch5_doctor:     { room:"doctor", walt:[110,174], cast:[["skyler",60,152],["doctor",236,134]], exit:[24,166] },
+  ch5_final:      { room:"street", tint:"dusk", walt:[160,184],
+                    spots:[{x:48,y:160,obj:"door"},{x:120,y:160,obj:"mark"}] },
+
+  /* rescues */
+  rescue_dea:     { room:"garage", walt:[120,178],
+                    spots:[{x:70,y:142,obj:"phone"},{x:184,y:128,obj:"mark"},{x:250,y:160,char:"hank"}] },
+  rescue_dea_ok:  { room:"garage", walt:[160,176], exit:[296,160] },
+  rescue_family:  { room:"kitchen", walt:[220,178],
+                    spots:[{x:160,y:136,obj:"cash"},{x:50,y:144,obj:"photo"},{x:96,y:152,char:"skyler"}] },
+  rescue_family_ok:{ room:"kitchen", walt:[160,172], cast:[["skyler",96,150]], exit:[300,152] },
+
+  /* random events */
+  evt_hank_dropby:{ room:"street", walt:[120,180],
+                    spots:[{x:200,y:166,char:"hank"},{x:60,y:172,obj:"door"}] },
+  evt_dealer_arrest:{ room:"jesse_house", walt:[160,176],
+                    spots:[{x:226,y:144,obj:"phone"},{x:60,y:170,obj:"mark"}] },
+  evt_bill_due:   { room:"kitchen", walt:[180,176],
+                    spots:[{x:96,y:142,obj:"envelope"},{x:300,y:154,obj:"door"}] },
+  evt_marie_tiara:{ room:"living", walt:[160,176],
+                    spots:[{x:226,y:144,obj:"phone"},{x:80,y:166,obj:"mark"}] },
+  evt_waltjr_breakfast:{ room:"kitchen", walt:[220,176], cast:[["waltjr",96,148]], exit:[300,152] },
+  evt_jesse_trouble:{ room:"living", tint:"night", walt:[160,176],
+                    spots:[{x:300,y:158,obj:"door"},{x:226,y:144,obj:"phone"}] },
+  evt_krazy8_fallout:{ room:"street", tint:"night", walt:[140,182], exit:[300,176] },
+  evt_saul_tip:   { room:"kitchen", walt:[180,176], exit:[300,152] },
+};
+
+/* fallback room per chapter for any scene without explicit staging */
+const CHAPTER_ROOMS = { 1:"living", 2:"desert", 3:"kitchen", 4:"jesse_house", 5:"desert" };
+
 
 /* ----- the story graph ----- */
 const STORY = {
@@ -1603,7 +2000,7 @@ function goTo(id, opts){
   if (state.history.length > 30) state.history.shift();
   if (sc.type === "chapter") renderChapterCard(sc);
   else if (sc.type === "ending") renderEnding(sc);
-  else renderScene(sc);
+  else enterScene(sc);
 }
 
 function chooseOption(choice){
@@ -1664,7 +2061,311 @@ function renderInventory(){
   $("invSheet").innerHTML = html;
 }
 
-/* ---------- rendering: scenes + typewriter ---------- */
+/* ---------- canvas presentation: sprites ---------- */
+let ctx = null;                 // main canvas 2d context
+let bgCanvas = null;            // pre-rendered room background
+const sprCache = {};
+
+function makeCanvas(w, h){
+  const cv = document.createElement("canvas");
+  cv.width = w; cv.height = h;
+  return cv;
+}
+
+/* procedural pixel person: 16x23, feet at bottom. dir: d/u/s, pose: 0 stand 1 walk */
+function buildPersonFrame(o, dir, pose){
+  const cv = makeCanvas(16, 23);
+  const c = cv.getContext("2d");
+  if (!c) return cv;
+  const px = (x,y,w,h,col)=>{ if(col){ c.fillStyle = col; c.fillRect(x,y,w,h); } };
+  const dark = "#16140f";
+
+  // head
+  px(5,1,6,6,o.skin);
+  if (dir === "s") px(11,3,1,2,o.skin);                       // nose
+  // hair
+  const H = o.hair;
+  if (o.style === "beanie"){ px(4,0,8,3,o.beanie); }
+  else if (o.style === "bald"){ /* shine */ px(6,1,2,1,"#f0d8b8"); }
+  else if (o.style === "recede"){
+    if (dir === "u") px(5,1,6,4,H);
+    else { px(4,2,1,4,H); px(11,2,1,4,H); if (dir === "s") px(4,1,3,2,H); }
+  }
+  else if (o.style === "short"){
+    px(5,0,6,2,H); px(4,1,1,3,H); px(11,1,1,3,H);
+    if (dir === "u") px(5,2,6,4,H);
+  }
+  else if (o.style === "sidepart"){
+    px(5,0,6,2,H); px(5,2,3,1,H); px(4,1,1,2,H); px(11,1,1,2,H);
+    if (dir === "u") px(5,2,6,4,H);
+  }
+  else if (o.style === "bob"){
+    px(4,0,8,3,H); px(3,2,2,5,H); px(11,2,2,5,H);
+    if (dir === "u") px(5,3,6,3,H);
+  }
+  else if (o.style === "long"){
+    px(4,0,8,2,H); px(3,1,2,9,H); px(11,1,2,9,H);
+    if (dir === "u") px(5,2,6,4,H);
+  }
+  // face details (not when facing away)
+  if (dir !== "u"){
+    if (o.glasses){ if (dir === "s") px(8,4,3,1,dark); else { px(5,4,2,1,dark); px(9,4,2,1,dark); px(7,4,2,1,"#4a4640"); } }
+    else if (dir === "d"){ px(6,4,1,1,dark); px(9,4,1,1,dark); }
+    if (o.goatee) px(6,6,4,1,dark);
+  }
+  if (o.hat){ px(3,1,10,1,dark); px(5,-0,6,1,dark); px(5,0,6,2,"#181818"); px(3,2,10,1,"#181818"); }
+
+  // body
+  const bx = o.broad ? 3 : 4, bw = o.broad ? 10 : 8;
+  px(bx,7,bw,8,o.top);
+  if (o.shirt && dir !== "u"){ px(7,7,2,6,o.shirt); }
+  if (o.tie && dir !== "u"){ px(7,8,2,1,o.tie); px(7,9,1,4,o.tie); }
+  if (o.chain && dir === "d"){ px(6,7,4,1,"#e8c040"); }
+  if (o.coat){ px(bx,7,2,10,o.coat); px(bx+bw-2,7,2,10,o.coat); }
+  // arms
+  if (dir === "s"){ px(7,8,2,6,o.top); px(7,13,2,1,o.skin); }
+  else {
+    px(bx-1,8,1,6,o.top); px(bx+bw,8,1,6,o.top);
+    px(bx-1,13,1,1,o.skin); px(bx+bw,13,1,1,o.skin);
+  }
+  px(4,14,8,1,"#26221c");                                      // belt
+
+  // legs + shoes
+  const P = o.pants, S = o.shoes, lw = o.baggy ? 3 : 2;
+  if (dir === "s"){
+    if (pose === 0){ px(7,15,3,6,P); px(7,21,4,2,S); }
+    else { px(5,15,lw,5,P); px(5,20,lw,1,P); px(9,15,lw,6,P); px(4,20,3,2,S); px(9,21,4,2,S); }
+  } else {
+    if (pose === 0){ px(5,15,lw,6,P); px(9,15,lw,6,P); px(4,21,3,2,S); px(9,21,3,2,S); }
+    else { px(4,15,lw,6,P); px(10,15,lw,6,P); px(3,21,3,2,S); px(10,21,3,2,S); }
+  }
+  if (o.crutches){ px(1,8,1,14,"#b8b8c0"); px(14,8,1,14,"#b8b8c0"); px(0,9,3,1,"#b8b8c0"); px(13,9,3,1,"#b8b8c0"); }
+  return cv;
+}
+
+function getPersonFrame(who, dir, pose){
+  let cfg = PEOPLE[who];
+  let key = who;
+  if (who === "walt"){
+    const bald = state.flags.bald;
+    const hat = state.inventory.includes("heisenberg_hat");
+    cfg = Object.assign({}, PEOPLE[bald ? "walt_bald" : "walt"], { hat });
+    key = "walt" + (bald?"b":"") + (hat?"h":"");
+  }
+  if (!cfg) cfg = PEOPLE.elliott;
+  const k = key + dir + pose;
+  if (!sprCache[k]) sprCache[k] = buildPersonFrame(cfg, dir, pose);
+  return sprCache[k];
+}
+
+/* small procedural prop icons for marker spots */
+function drawProp(c, kind, x, y, t){
+  const bob = Math.sin(t/260)*2;
+  const px = (dx,dy,w,h,col)=>{ c.fillStyle=col; c.fillRect(Math.round(x+dx), Math.round(y+dy+bob), w, h); };
+  switch(kind){
+    case "phone":    px(-3,-12,6,10,"#1c1c22"); px(-2,-11,4,5,"#7ac8a0"); px(2,-15,1,4,"#1c1c22"); break;
+    case "envelope": px(-5,-9,10,7,"#f0ead8"); px(-5,-9,10,1,"#b8a888"); px(-5,-9,5,4,"#d8cdb4"); px(0,-9,5,4,"#d8cdb4"); break;
+    case "cash":     px(-5,-8,10,6,"#3a7a42"); px(-3,-6,6,2,"#7ab880"); break;
+    case "hat":      px(-6,-7,12,2,"#141414"); px(-4,-12,8,5,"#1f1f1f"); break;
+    case "photo":    px(-5,-10,10,8,"#c8a040"); px(-4,-9,8,6,"#d8e8e8"); px(-2,-7,4,3,"#8a5c34"); break;
+    case "bag":      px(-6,-8,12,7,"#5a5142"); px(-2,-10,4,2,"#3a342a"); break;
+    case "door":     /* exit arrow */
+      c.fillStyle = "#ffd24a";
+      c.beginPath();
+      c.moveTo(x, y-14+bob); c.lineTo(x-5, y-7+bob); c.lineTo(x+5, y-7+bob);
+      c.closePath(); c.fill();
+      break;
+    default:         /* mark: diamond */
+      c.fillStyle = "#ffd24a";
+      c.beginPath();
+      c.moveTo(x, y-14+bob); c.lineTo(x+4, y-9+bob); c.lineTo(x, y-4+bob); c.lineTo(x-4, y-9+bob);
+      c.closePath(); c.fill();
+  }
+}
+
+/* ---------- room rendering ---------- */
+function roomHelpers(c){
+  const h = {
+    r:(x,y,w,hh,col)=>{ c.fillStyle=col; c.fillRect(x,y,w,hh); },
+    g:(x,y,w,hh,c1,c2)=>{
+      const gr = c.createLinearGradient(x,y,x,y+hh);
+      gr.addColorStop(0,c1); gr.addColorStop(1,c2);
+      c.fillStyle = gr; c.fillRect(x,y,w,hh);
+    },
+    dith:(x,y,w,hh,c1,c2)=>{
+      c.fillStyle = c2; c.fillRect(x,y,w,hh);
+      c.fillStyle = c1;
+      for(let yy=y; yy<y+hh; yy+=2) for(let xx=x+((yy/2|0)%2); xx<x+w; xx+=2) c.fillRect(xx,yy,1,1);
+    },
+    e:(cx,cy,rx,ry,col)=>{ c.fillStyle=col; c.beginPath(); c.ellipse(cx,cy,rx,ry,0,0,7); c.fill(); },
+    win:(x,y,w,hh,sky)=>{
+      h.r(x-3,y-3,w+6,hh+6,"#6a4a2e"); h.g(x,y,w,hh,sky||"#88b8d8","#c8e0e8");
+      h.r(x+w/2-1,y,2,hh,"#6a4a2e"); h.r(x,y+hh/2-1,w,2,"#6a4a2e");
+    },
+    t:(s,x,y,col)=>{ c.fillStyle=col; c.font="8px monospace"; c.fillText(s,x,y); },
+  };
+  return h;
+}
+
+const TINTS = { night:"rgba(14,22,56,.42)", dusk:"rgba(120,40,70,.26)" };
+
+function paintRoom(room, tint){
+  bgCanvas = makeCanvas(320,200);
+  const c = bgCanvas.getContext("2d");
+  if (!c) return;
+  room.draw(roomHelpers(c));
+  if (tint){ c.fillStyle = TINTS[tint] || tint; c.fillRect(0,0,320,200); }
+}
+
+/* ---------- view state, walker, hotspots ---------- */
+const view = { room:null, spots:[], cast:[], active:false, near:null, frozen:false };
+const walt = { x:160, y:170, dir:"d", pose:0, animT:0, moving:false, target:null };
+const keys = { up:false, down:false, left:false, right:false };
+const WALK_SPEED = 70;          // logical px/s
+const SPOT_RADIUS = 26;
+
+function autoSpotPos(i){ return { x:[64,152,240,300][i%4], y:156 }; }
+
+function enterScene(sc){
+  view.frozen = false;
+  const stage = STAGES[state.scene] || {};
+  const roomId = stage.room || CHAPTER_ROOMS[sc.chapter] || "desert";
+  const room = ROOMS[roomId] || ROOMS.desert;
+  view.room = room;
+  paintRoom(room, stage.tint);
+  const sp = stage.walt || room.spawn;
+  walt.x = sp[0]; walt.y = sp[1]; walt.dir = "d"; walt.target = null; walt.pose = 0;
+  view.cast = (stage.cast || []).map(([who,x,y]) => ({ who, x, y }));
+  view.spots = [];
+  if (sc.choices){
+    sc.choices.forEach((choice, i)=>{
+      const res = checkRequire(choice.require);
+      if (!res.ok && choice.hidden) return;
+      const pos = (stage.spots && stage.spots[i]) || autoSpotPos(i);
+      view.spots.push({
+        x:pos.x, y:pos.y, char:pos.char, obj:pos.obj, choice,
+        locked:!res.ok, hint: choice.hint || res.hints[0] || "Not available",
+      });
+    });
+  } else if (sc.next){
+    const pos = stage.exit ? { x:stage.exit[0], y:stage.exit[1] } : { x:room.exit[0], y:room.exit[1] };
+    view.spots.push({ x:pos.x, y:pos.y, obj:"door", locked:false,
+                      choice:{ label: stage.exitLabel || "Continue", goto: sc.next } });
+  }
+  view.active = false; view.near = null;
+  setCaption("");
+  showNarration(sc);
+}
+
+function freezeStage(){
+  view.frozen = true;
+  hideNarration();
+  setCaption("");
+}
+
+function setCaption(text, locked){
+  const el = $("caption");
+  el.textContent = text || "";
+  el.className = locked ? "locked" : "";
+}
+
+function spotCaption(s){
+  return s.locked ? "✗ " + s.choice.label + " — " + s.hint : "▸ " + s.choice.label;
+}
+
+function nearestSpot(){
+  if (!view.active) return null;
+  let best = null, bd = SPOT_RADIUS;
+  for (const s of view.spots){
+    const d = Math.hypot(s.x - walt.x, (s.y - walt.y) * 1.25);
+    if (d < bd){ bd = d; best = s; }
+  }
+  return best;
+}
+
+function interact(){
+  if (narration.open) return advanceNarration();
+  if (view.frozen || !view.active) return;
+  const s = view.near;
+  if (!s) return;
+  if (s.locked){ setCaption(spotCaption(s), true); return; }
+  chooseOption(s.choice);
+}
+
+function update(dt){
+  if (view.frozen || narration.open || !view.room) { walt.moving = false; return; }
+  let vx = (keys.right?1:0) - (keys.left?1:0);
+  let vy = (keys.down?1:0) - (keys.up?1:0);
+  if (walt.target){
+    const dx = walt.target.x - walt.x, dy = walt.target.y - walt.y;
+    const d = Math.hypot(dx,dy);
+    if (d < 3){
+      const spot = walt.target.spot;
+      walt.target = null;
+      if (spot && view.spots.includes(spot)){ view.near = spot; interact(); }
+    } else { vx = dx/d; vy = dy/d; }
+  }
+  if (vx || vy){
+    const n = Math.hypot(vx,vy);
+    walt.x += (vx/n) * WALK_SPEED * dt;
+    walt.y += (vy/n) * WALK_SPEED * dt;
+    walt.dir = Math.abs(vx) >= Math.abs(vy) ? "s" : (vy > 0 ? "d" : "u");
+    walt.flip = vx < 0;
+    walt.moving = true;
+    walt.animT += dt;
+    if (walt.animT > 0.16){ walt.animT = 0; walt.pose = walt.pose ? 0 : 1; }
+  } else { walt.moving = false; walt.pose = 0; }
+  const wk = view.room.walk;
+  walt.x = Math.max(10, Math.min(310, walt.x));
+  walt.y = Math.max(wk.y0, Math.min(wk.y1, walt.y));
+  const near = nearestSpot();
+  if (near !== view.near){
+    view.near = near;
+    setCaption(near ? spotCaption(near) : "", near && near.locked);
+  }
+}
+
+function perspScale(y){
+  const wk = view.room ? view.room.walk : { y0:120, y1:192 };
+  const t = Math.max(0, Math.min(1, (y - wk.y0) / Math.max(1, wk.y1 - wk.y0)));
+  return 1.05 + t * 0.45;
+}
+
+function drawSpriteAt(c, cv, x, y, s, flip){
+  const w = cv.width * s, h = cv.height * s;
+  if (flip){
+    c.save(); c.translate(Math.round(x), 0); c.scale(-1, 1);
+    c.drawImage(cv, Math.round(-w/2), Math.round(y - h), Math.round(w), Math.round(h));
+    c.restore();
+  } else {
+    c.drawImage(cv, Math.round(x - w/2), Math.round(y - h), Math.round(w), Math.round(h));
+  }
+}
+
+function draw(now){
+  if (!ctx || !bgCanvas) return;
+  ctx.clearRect(0,0,320,200);
+  ctx.drawImage(bgCanvas, 0, 0);
+  if (view.active){
+    for (const s of view.spots){
+      if (s === view.near){
+        ctx.strokeStyle = s.locked ? "#ff7a5c" : "#ffd24a";
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.ellipse(s.x, s.y+2, 11, 4, 0, 0, 7); ctx.stroke();
+      }
+      if (!s.char) drawProp(ctx, s.obj || "mark", s.x, s.y - 4, now);
+    }
+  }
+  const ents = [];
+  for (const p of view.cast) ents.push({ y:p.y, draw:()=>drawSpriteAt(ctx, getPersonFrame(p.who,"d",0), p.x, p.y, perspScale(p.y)) });
+  for (const s of view.spots) if (s.char) ents.push({ y:s.y, draw:()=>drawSpriteAt(ctx, getPersonFrame(s.char,"d",0), s.x, s.y, perspScale(s.y)) });
+  ents.push({ y:walt.y, draw:()=>drawSpriteAt(ctx, getPersonFrame("walt", walt.dir, walt.moving ? walt.pose : 0), walt.x, walt.y, perspScale(walt.y), walt.dir==="s" && walt.flip) });
+  ents.sort((a,b)=>a.y-b.y);
+  for (const e of ents) e.draw();
+}
+
+/* ---------- narration window + typewriter ---------- */
+const narration = { open:false, done:false };
 const tw = { items:[], idx:0, pos:0, timer:null, done:true };
 
 function sceneParagraphs(sc){
@@ -1673,21 +2374,32 @@ function sceneParagraphs(sc){
   return (t || []).filter(Boolean);
 }
 
-function renderScene(sc){
-  const narr = $("narrative");
-  narr.classList.add("fade");
-  setTimeout(()=>{
-    const sp = $("speaker");
-    if (sc.speaker && CHARACTERS[sc.speaker]){
-      sp.textContent = CHARACTERS[sc.speaker].name;
-      sp.style.color = CHARACTERS[sc.speaker].color;
-      sp.className = "on";
-    } else sp.className = "";
-    startTypewriter(sceneParagraphs(sc));
-    renderChoices(sc);
-    narr.classList.remove("fade");
-    narr.scrollTop = 0;
-  }, 250);
+function showNarration(sc){
+  const sp = $("speaker");
+  if (sc.speaker && CHARACTERS[sc.speaker]){
+    sp.textContent = CHARACTERS[sc.speaker].name;
+    sp.className = "on";
+  } else sp.className = "";
+  narration.open = true; narration.done = false;
+  $("winHint").className = "";
+  $("textwin").classList.add("on");
+  startTypewriter(sceneParagraphs(sc));
+}
+
+function hideNarration(){
+  stopTypewriter();
+  narration.open = false;
+  $("textwin").classList.remove("on");
+}
+
+function advanceNarration(){
+  if (!narration.open) return;
+  if (!tw.done){ finishTypewriter(); return; }
+  hideNarration();
+  view.active = true;
+  const near = nearestSpot();
+  view.near = near;
+  if (near) setCaption(spotCaption(near), near.locked);
 }
 
 function startTypewriter(paras){
@@ -1700,12 +2412,11 @@ function startTypewriter(paras){
     return { p, text };
   });
   tw.idx = 0; tw.pos = 0; tw.done = false;
-  $("skipHint").style.opacity = .6;
   tw.timer = setInterval(stepTypewriter, 14);
 }
 
 function stepTypewriter(){
-  let budget = 2; // chars per tick
+  let budget = 2;
   while (budget-- > 0){
     if (tw.idx >= tw.items.length) return finishTypewriter();
     const item = tw.items[tw.idx];
@@ -1714,14 +2425,13 @@ function stepTypewriter(){
       item.p.textContent = item.text;
       item.p.classList.remove("cursor");
       tw.idx++; tw.pos = 0;
+      const w = $("textwin");
+      if (w.scrollHeight) w.scrollTop = w.scrollHeight;
     } else {
       item.p.textContent = item.text.slice(0, tw.pos);
       item.p.classList.add("cursor");
     }
   }
-  const cur = tw.items[tw.idx];
-  if (cur && cur.p.getBoundingClientRect().bottom > window.innerHeight)
-    cur.p.scrollIntoView({ block:"end" });
 }
 
 function stopTypewriter(){
@@ -1733,41 +2443,8 @@ function finishTypewriter(){
   if (tw.done) return;
   tw.done = true;
   for (const it of tw.items){ it.p.textContent = it.text; it.p.classList.remove("cursor"); }
-  $("skipHint").style.opacity = 0;
-  revealChoices();
-}
-
-function skipTypewriter(){
-  if (!tw.done) finishTypewriter();
-}
-
-/* ---------- rendering: choices ---------- */
-function renderChoices(sc){
-  const box = $("choices");
-  box.innerHTML = "";
-  const entries = sc.choices
-    ? sc.choices.slice()
-    : [{ label:"Continue", goto:sc.next, _continue:true }];
-  for (const ch of entries){
-    const res = checkRequire(ch.require);
-    if (!res.ok && ch.hidden) continue;
-    const btn = document.createElement("button");
-    btn.className = "choice";
-    btn.innerHTML = '<span class="arrow">▸</span>' + escapeHtml(ch.label);
-    if (!res.ok){
-      btn.disabled = true;
-      const hint = ch.hint || res.hints[0] || "Not available";
-      btn.innerHTML += '<span class="hint">'+escapeHtml(hint)+'</span>';
-    } else {
-      btn.addEventListener("click", ()=>chooseOption(ch));
-    }
-    box.appendChild(btn);
-  }
-}
-
-function revealChoices(){
-  const btns = $("choices").querySelectorAll(".choice");
-  btns.forEach((b,i)=> setTimeout(()=>b.classList.add("show"), 80*i));
+  narration.done = true;
+  $("winHint").className = "on";
 }
 
 function escapeHtml(s){
@@ -1784,6 +2461,7 @@ function showOverlay(tone){
 function hideOverlay(){ $("overlay").className = ""; }
 
 function renderChapterCard(sc){
+  freezeStage();
   $("cardKicker").textContent = "Chapter " + ["","One","Two","Three","Four","Five"][sc.chapter];
   $("cardTitle").textContent = sc.title;
   $("cardBody").innerHTML = "";
@@ -1795,6 +2473,7 @@ function renderChapterCard(sc){
 }
 
 function renderEnding(sc){
+  freezeStage();
   $("cardKicker").textContent = "An Ending";
   $("cardTitle").textContent = sc.title;
   $("cardBody").innerHTML = sceneParagraphs(sc).map(p=>"<p>"+escapeHtml(p)+"</p>").join("");
@@ -1899,8 +2578,68 @@ function closeSheet(){ $("sheet").classList.remove("open"); $("scrim").classList
    ============================================================ */
 function renderAll(){ renderHUD(); renderInventory(); }
 
+const KEYMAP = {
+  ArrowUp:"up", ArrowDown:"down", ArrowLeft:"left", ArrowRight:"right",
+  w:"up", s:"down", a:"left", d:"right", W:"up", S:"down", A:"left", D:"right",
+};
+
+function canvasPoint(ev){
+  const cv = $("screen");
+  const r = cv.getBoundingClientRect();
+  if (!r.width || !r.height) return { x:160, y:160 };
+  return { x:(ev.clientX - r.left) / r.width * 320, y:(ev.clientY - r.top) / r.height * 200 };
+}
+
 document.addEventListener("DOMContentLoaded", ()=>{
-  $("narrative").addEventListener("click", skipTypewriter);
+  const screen = $("screen");
+  ctx = screen.getContext && screen.getContext("2d");
+  if (ctx && ctx.imageSmoothingEnabled !== undefined) ctx.imageSmoothingEnabled = false;
+
+  document.addEventListener("keydown", (e)=>{
+    if ($("saveModal").classList.contains("on")){
+      if (e.key === "Escape") closeSaveModal();
+      return;
+    }
+    const dir = KEYMAP[e.key];
+    if (dir){ keys[dir] = true; walt.target = null; e.preventDefault(); return; }
+    if (e.key === "Enter" || e.key === " "){ interact(); e.preventDefault(); return; }
+    if (e.key === "Escape"){ openSaveModal(); }
+  });
+  document.addEventListener("keyup", (e)=>{
+    const dir = KEYMAP[e.key];
+    if (dir) keys[dir] = false;
+  });
+
+  // tap/click to walk (and act on hotspots)
+  screen.addEventListener("pointerdown", (ev)=>{
+    if (narration.open){ advanceNarration(); return; }
+    if (view.frozen || !view.room) return;
+    const p = canvasPoint(ev);
+    let spot = null;
+    for (const s of view.spots){
+      if (Math.hypot(s.x - p.x, s.y - p.y) < 22) { spot = s; break; }
+    }
+    const wk = view.room.walk;
+    walt.target = spot
+      ? { x:spot.x, y:Math.max(wk.y0, Math.min(wk.y1, spot.y + 4)), spot }
+      : { x:Math.max(10, Math.min(310, p.x)), y:Math.max(wk.y0, Math.min(wk.y1, p.y)) };
+  });
+
+  $("textwin").addEventListener("click", advanceNarration);
+
+  // touch D-pad + action button
+  document.querySelectorAll("#dpad [data-dir]").forEach(btn=>{
+    const dir = btn.dataset.dir;
+    const on = (e)=>{ keys[dir] = true; walt.target = null; e.preventDefault(); };
+    const off = ()=>{ keys[dir] = false; };
+    btn.addEventListener("pointerdown", on);
+    btn.addEventListener("pointerup", off);
+    btn.addEventListener("pointerleave", off);
+    btn.addEventListener("pointercancel", off);
+  });
+  $("actBtn").addEventListener("pointerdown", (e)=>{ interact(); e.preventDefault(); });
+
+  // chrome
   $("bagBtn").addEventListener("click", openSheet);
   $("sheetClose").addEventListener("click", closeSheet);
   $("scrim").addEventListener("click", closeSheet);
@@ -1908,12 +2647,28 @@ document.addEventListener("DOMContentLoaded", ()=>{
   $("copyBtn").addEventListener("click", copySaveCode);
   $("loadBtn").addEventListener("click", loadFromInput);
   $("closeSave").addEventListener("click", closeSaveModal);
+
   renderAll();
   goTo(STORY.start);
+
+  let last = (typeof performance !== "undefined" ? performance.now() : 0);
+  function tick(t){
+    const dt = Math.min(0.05, (t - last) / 1000);
+    last = t;
+    update(dt);
+    draw(t);
+    requestAnimationFrame(tick);
+  }
+  if (typeof requestAnimationFrame === "function") requestAnimationFrame(tick);
 });
 
 // debug handle (used during development; harmless to keep)
-window.game = { get state(){ return state; }, goTo, importSave, exportSave };
+window.game = {
+  get state(){ return state; },
+  get walt(){ return walt; },
+  get view(){ return view; },
+  goTo, importSave, exportSave, interact, update, advanceNarration,
+};
 </script>
 </body>
 </html>
