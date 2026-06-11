@@ -215,45 +215,45 @@ button{
 }
 .sysbtn:active{border-color:var(--chrome-lo) var(--chrome-hi) var(--chrome-hi) var(--chrome-lo)}
 
-/* ---------- touch controls ---------- */
+/* ---------- touch controls: own bar below the canvas, never over it ---------- */
+#controls{display:none}
 #dpad{
-  position:absolute;left:10px;bottom:12px;z-index:4;
-  display:none;
-  grid-template-columns:repeat(3,46px);
-  grid-template-rows:repeat(3,46px);
+  display:grid;
+  grid-template-columns:repeat(3,44px);
+  grid-template-rows:repeat(3,40px);
   gap:2px;
-  opacity:.85;
 }
 #dpad button{
-  background:rgba(20,20,30,.55);
-  border:1px solid rgba(255,255,255,.35);
+  background:rgba(40,40,56,.75);
+  border:1px solid rgba(255,255,255,.3);
   border-radius:8px;
-  color:#fff;font-size:18px;
+  color:#fff;font-size:17px;
   touch-action:none;
   user-select:none;-webkit-user-select:none;
 }
-#dpad button:active{background:rgba(232,163,61,.5)}
+#dpad button:active{background:rgba(232,163,61,.6)}
 #dpad .blank{visibility:hidden}
 #actBtn{
-  position:absolute;right:14px;bottom:22px;z-index:4;
-  display:none;
-  width:64px;height:64px;border-radius:50%;
-  background:rgba(232,163,61,.35);
-  border:2px solid rgba(255,210,74,.7);
-  color:#ffd24a;font-size:13px;letter-spacing:.05em;
+  width:72px;height:72px;border-radius:50%;
+  background:rgba(232,163,61,.3);
+  border:2px solid rgba(255,210,74,.65);
+  color:#ffd24a;font-size:14px;letter-spacing:.05em;
   touch-action:none;user-select:none;-webkit-user-select:none;
 }
-#actBtn:active{background:rgba(232,163,61,.7)}
+#actBtn:active{background:rgba(232,163,61,.65)}
 @media (pointer:coarse){
-  #dpad{display:grid}
-  #actBtn{display:block}
+  #controls{
+    display:flex;align-items:center;justify-content:space-between;
+    width:100%;max-width:560px;
+    padding:2px 14px;
+  }
 }
 
 /* ---------- phone layout: panel below canvas ---------- */
-@media (max-width:760px), (orientation:portrait){
+@media (max-width:760px), (orientation:portrait), (pointer:coarse){
   #main{padding:6px}
   #game{flex-direction:column;align-items:center;gap:8px}
-  #stage{width:100%;max-width:calc((100dvh - 300px) * 1.6);align-self:center}
+  #stage{width:100%;max-width:max(280px, calc((100dvh - 430px) * 1.6));align-self:center}
   #panel{
     width:100%;max-width:none;flex:1;align-self:stretch;
     max-height:none;min-height:140px;
@@ -369,6 +369,9 @@ button{
     <div id="game">
       <div id="stage">
         <canvas id="screen" width="640" height="400"></canvas>
+      </div>
+
+      <div id="controls">
         <div id="dpad">
           <button class="blank"></button><button data-dir="up" aria-label="Up">▲</button><button class="blank"></button>
           <button data-dir="left" aria-label="Left">◀</button><button class="blank"></button><button data-dir="right" aria-label="Right">▶</button>
